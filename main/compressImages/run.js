@@ -8,8 +8,6 @@ export const compressAll = (fileLocation, logLocation)=>{
 
     const rate = process.argv[2] == undefined ? 50 : process.argv[2]
 
-
-
     let SKUlib = {
         accept : fs.readFileSync('./skus.csv', 'utf8').split(/\r\n|\r|\n/),
         files: []
