@@ -14,7 +14,6 @@ export const compressAll = (fileLocation, logLocation)=>{
     }
 
 
-
     function readdir(directory) {
         return new Promise((resolve, reject) => {
             fs.readdir(directory, (error, folders) => {
