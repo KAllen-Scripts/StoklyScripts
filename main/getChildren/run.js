@@ -59,10 +59,8 @@ function writeToCSV(reponseObj){
     let done = 0
 
     do{
-        pageNum += 1
-        
-        var response = await getRequest("https://api.stok.ly/v0/items?size=100&page=" + pageNum + "&filter=([status]!={1})").catch(err => {console.log(err)})
 
+        var response = await getRequest("https://api.stok.ly/v0/items?size=100&page=" + pageNum + "&filter=([status]!={1})").catch(err => {console.log(err)})
         for (const item of response.data.data){
             if(item.format != 0){
                 responseObj.push({
@@ -74,8 +72,10 @@ function writeToCSV(reponseObj){
                 })
             }
             done += 1
+
         }
 
+        pageNum += 1
         
         console.log("Checked items " + done + " out of " + response.data.metadata.count)
 
