@@ -15,9 +15,7 @@ let defaultIn = ((feedIn)=>{
     return returnArr
 })
 
-const run = ((jason = defaultIn("./CombineJSON - input.txt"), feedOut = './Combined JSON.csv')=>{
-
-    let delim = ","
+const run = ((jason = defaultIn("./CombineJSON - input.txt"), feedOut = './Combined JSON.csv', delim = ",")=>{
 
     //index of 0 is used for headers
     let arrData = [
