@@ -90,6 +90,7 @@ async function getAllAttributes(){
 }
 
 
+
 async function loopThrough(callback){
     let page = 0
     done = 0
