@@ -226,8 +226,11 @@ function getPatchData(item){
 
     returnObj = {
         attributes:attributes,
-        images:images,
         channelSpecifics:[]
+    }
+
+    if(images.length > 0){
+        returnObj.images = images
     }
 
     for(const att of Object.keys(item.data.data)){
