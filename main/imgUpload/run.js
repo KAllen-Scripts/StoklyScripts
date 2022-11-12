@@ -2,7 +2,7 @@ const axios = require('axios');
 const FormData = require('form-data');
 const fs = require("fs");
 const isImage = require('is-image')
-const compressAll = require("./node_modules/compression.js");
+const compressAll = require("../compressImages/run");
 const readline = require('readline');
 
 let args = {
