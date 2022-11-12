@@ -59,7 +59,7 @@ const patchFunc = async (url, data)=>{
     })
 }
 
-const appendToBackup = (addition, logFile = "./backup.txt")=>{
+const appendToBackup = (addition, logFile)=>{
     addition +=  '\n'
     fs.appendFile(logFile, addition, function (err) {
         if (err) {console.log(err)};
@@ -90,7 +90,6 @@ async function getAllAttributes(){
 }
 
 
-
 async function loopThrough(callback){
     let page = 0
     done = 0
@@ -112,7 +111,11 @@ async function loopThrough(callback){
 
             await sleep(sleepTime)
 
-            await callback(response.data)
+            try{
+                await callback(response.data)
+            } catch {
+                throw response
+            }
         }
 
     }while (length > 0)
@@ -199,14 +202,14 @@ function generateCSV(){
 }
 
 
-function getPatchData(item){
+function getPatchData(listing){
 
     let attributes = []
     let images = []
     let returnObj = {}
 
-    if(item.data.data.attributes != undefined){
-        for(const att of item.data.data.attributes){
+    if(listing.data.data.attributes != undefined){
+        for(const att of listing.data.data.attributes){
             if (!overRideAtts.includes(String(attributeNames[att.attributeId]).toLowerCase())){
                 attributes.push(att)
             }
@@ -214,12 +217,12 @@ function getPatchData(item){
     }
 
 
-    if (item.data.data.listIndividually != undefined){
-        returnObj.listIndividually = item.data.data.listIndividually
+    if (listing.data.data.listIndividually != undefined){
+        returnObj.listIndividually = listing.data.data.listIndividually
     }
 
-    if (removeImages == false && item.data.data.images != undefined){
-        for (const img of item.data.data.images){
+    if (removeImages == false && listing.data.data.images != undefined){
+        for (const img of listing.data.data.images){
             images.push({uri:img.uri})
         }
     }
@@ -233,9 +236,9 @@ function getPatchData(item){
         returnObj.images = images
     }
 
-    for(const att of Object.keys(item.data.data)){
+    for(const att of Object.keys(listing.data.data)){
         if (!overRideAtts.includes(String(att).toLowerCase()) && !["attributes","images","channelspecifics","stokly_type","variableitemid","variantlistingids"].includes(String(att).toLowerCase())){
-            returnObj[att] = item.data.data[att]
+            returnObj[att] = listing.data.data[att]
         }
     }
 
@@ -244,27 +247,42 @@ function getPatchData(item){
 }
 
 
-async function removeOverrides(item){
+async function removeOverrides(listing){
 
-    appendToBackup(JSON.stringify(item))
+    appendToBackup(JSON.stringify(listing), "./responses.txt")
 
     done += 1
 
-    if(!excludeArr.includes(String(item.data.sku))){
-        data = getPatchData(item)
+    if(!excludeArr.includes(String(listing.data.sku))){
 
+        try{
 
-        patchFunc("https://api.stok.ly/v0/listings/" + item.data.listingId, {data:data}).catch(err=>{console.log(err)})
+            data = getPatchData(listing)
 
-        console.log("done " + item.data.sku + " (" + item.data.listingId + ") " + "(" + done + " out of " + total + ")")
+            appendToBackup(JSON.stringify(
+                {
+                    url:"https://api.stok.ly/v0/listings/" + listing.data.listingId,
+                    data:data
+                }
+            ), "./patches.txt")
+    
+            patchFunc("https://api.stok.ly/v0/listings/" + listing.data.listingId, {data:data}).catch(err=>{console.log(err)})
+    
+            console.log("Done " + listing.data.sku + " || " + listing.data.listingId + " (" + done + " out of " + total + ")")
+    
+            await sleep(sleepTime)
 
-        await sleep(sleepTime)
+        }catch{
+
+            throw response
+
+        }
 
     } else {
         
         skipped += 1
 
-        console.log("Skipped " + item.data.sku + " (" + item.data.listingId + ") " + "(" + done + " out of " + total + ")")
+        console.log("Skipped " + listing.data.sku + " || " + listing.data.listingId + " (" + done + " out of " + total + ")")
     }
 
 }
@@ -307,7 +325,8 @@ async function getInput(){
     excludeArr = inputs.items
 
     if(userInput.toLowerCase() == "continue"){
-        appendToBackup("//////////////////////////////////////////////////////////////////////////////////\nBackups for " + new Date() + "\n//////////////////////////////////////////////////////////////////////////////////\n")
+        appendToBackup("//////////////////////////////////////////////////////////////////////////////////\nBackups for " + new Date() + "\n//////////////////////////////////////////////////////////////////////////////////\n", "./responses.txt")
+        appendToBackup("//////////////////////////////////////////////////////////////////////////////////\nBackups for " + new Date() + "\n//////////////////////////////////////////////////////////////////////////////////\n", "./patches.txt" )
         await loopThrough(removeOverrides)
     }
 })()
