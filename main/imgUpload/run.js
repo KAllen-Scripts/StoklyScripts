@@ -16,13 +16,13 @@ let args = {
 
 processInput(process.argv[2])
 
-let logLocation = './logs.txt'
-let fileLocation = './images'
+const logLocation = './logs.txt'
+const fileLocation = './images'
 let done = 0
 let total = 0
 let largestArr = 0
-let fileExtensions = /(\.jpg|\.jpeg|\.png|\.svg|\.gif)$/i
-let skuGetPath =  (function(sku){return 'https://api.' + args.enviroment + 'stok.ly/v0/items?size=1000&page=0&sortDirection=ASC&sortField=name&filter=([sku]::{' + sku + '})%26%26([status]!={1})'})
+const fileExtensions = /(\.jpg|\.jpeg|\.png|\.svg|\.gif)$/i
+const skuGetPath =  (function(sku){return 'https://api.' + args.enviroment + 'stok.ly/v0/items?size=1000&page=0&sortDirection=ASC&sortField=name&filter=([sku]::{' + sku + '})%26%26([status]!={1})'})
 
 let SKUlib = {
     accept : fs.readFileSync('./skus.csv', 'utf8').split(/\r\n|\r|\n/),
