@@ -15,7 +15,7 @@ const getFunc = async (url)=>{
             },
             url:url
         }
-        res(axios(getRequest).catch(err=>{rej(err)}))
+        res(axios(getRequest).catch(err=>{console.log(err)}))
     })
 }
 
@@ -31,14 +31,7 @@ const postFunc = async (url, data)=>{
             url:url,
             data:JSON.stringify(data)
         }
-        res(axios(patchRequest).catch(err=>{rej(err)}))
-    })
-}
-
-const appendToBackup = (addition, logFile)=>{
-    addition +=  '\n'
-    fs.appendFile(logFile, addition, function (err) {
-        if (err) {console.log(err)};
+        res(axios(patchRequest).catch(err=>{console.log(err)}))
     })
 }
 
@@ -50,35 +43,27 @@ async function loopThrough(callback){
 
         let res = await getFunc(encodeURI("https://api.stok.ly/v0/variances?size=1000&page=" + page + "&sortDirection=DESC&sortField=niceId&filter=")).catch(err=>{console.log(err)})
 
-        await sleep(sleepTime)
-
         total = res.data.metadata.count
 
         length = res.data.data.length
         page += 1
 
         for (const item of res.data.data){
-
-            try{
-                await callback(item, "https://api.stok.ly/v0/variances/" + item.varianceId)
-            } catch {
-                throw response
-            }
+            await callback(item)
         }
 
     }while (length > 0)
 }
 
-async function resolveItem(item, url){
-    if (item.status == 0 && idArr.includes(item.niceId)) {
-        await postFunc(url, JSON.stringify(
-            {
+async function resolveItem(item){
+    if (item.status == 0 && idArr.includes(String(item.niceId))) {
+        await postFunc("https://api.stok.ly/v0/variances/" + item.varianceId + "/resolutions", {
                 dismissals:0,
                 blemishedCreations:0,
                 reason:"",
                 onHandAdjustment: item.expected > item.actual ? 0 : item.actual - item.expected
             }
-        ))
+        )
         console.log("Resolved variance " + item.niceId)
     }
 }
@@ -86,7 +71,7 @@ async function resolveItem(item, url){
 async function getInput(){
     return new Promise((res,rej)=>{
         let returnArr = []
-        const stream = fs.createReadStream('./items.csv')
+        const stream = fs.createReadStream('./input.csv')
         .pipe(csv.parse({ headers: true }))
         .on('error', error => console.error(error))
         .on('data',  row => {
@@ -98,6 +83,7 @@ async function getInput(){
 
 (async ()=>{
     idArr = await getInput()
-    await loopThrough(resolveItem())
+    console.log(idArr)
+    await loopThrough(resolveItem)
     console.log("Complete")
 })()
