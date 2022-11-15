@@ -4,9 +4,7 @@ const csv = require('fast-csv');
 
 const accessToken = process.argv[2];
 
-let excludeArr = []
-let length = 0
-let done = 0
+idArr = []
 
 const getFunc = async (url)=>{
     return new Promise((res,rej)=>{
@@ -22,10 +20,10 @@ const getFunc = async (url)=>{
 }
 
 
-const patchFunc = async (url, data)=>{
+const postFunc = async (url, data)=>{
     return new Promise((res,rej)=>{
         let patchRequest = {
-            method:'patch',
+            method:'post',
             headers:{
                 'Authorization': 'Bearer ' + accessToken,
                 'Content-Type': 'application/json'
@@ -61,10 +59,8 @@ async function loopThrough(callback){
 
         for (const item of res.data.data){
 
-            let response = await getFunc("https://api.stok.ly/v0/variances/" + item.varianceId).catch(err=>{console.log(err)})
-
             try{
-                await callback(response.data)
+                await callback(item, "https://api.stok.ly/v0/variances/" + item.varianceId)
             } catch {
                 throw response
             }
@@ -72,3 +68,36 @@ async function loopThrough(callback){
 
     }while (length > 0)
 }
+
+async function resolveItem(item, url){
+    if (item.status == 0 && idArr.includes(item.niceId)) {
+        await postFunc(url, JSON.stringify(
+            {
+                dismissals:0,
+                blemishedCreations:0,
+                reason:"",
+                onHandAdjustment: item.expected > item.actual ? 0 : item.actual - item.expected
+            }
+        ))
+        console.log("Resolved variance " + item.niceId)
+    }
+}
+
+async function getInput(){
+    return new Promise((res,rej)=>{
+        let returnArr = []
+        const stream = fs.createReadStream('./items.csv')
+        .pipe(csv.parse({ headers: true }))
+        .on('error', error => console.error(error))
+        .on('data',  row => {
+            returnArr.push(String(row.ID).trim().toLowerCase())
+        })
+        .on('end', r => {res(returnArr)})
+    })
+}
+
+(async ()=>{
+    idArr = await getInput()
+    await loopThrough(resolveItem())
+    console.log("Complete")
+})()
