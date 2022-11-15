@@ -83,7 +83,6 @@ async function getInput(){
 
 (async ()=>{
     idArr = await getInput()
-    console.log(idArr)
     await loopThrough(resolveItem)
     console.log("Complete")
 })()
