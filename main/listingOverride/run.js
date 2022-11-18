@@ -31,32 +31,28 @@ const askQuestion = (query)=>{
 }
 
 const getFunc = async (url)=>{
-    return new Promise((res,rej)=>{
-        let getRequest = {
-            method:'get',
-            headers:{ 
-                'Authorization': 'Bearer ' + accessToken
-            },
-            url:url
-        }
-        res(axios(getRequest).catch(err=>{rej(err)}))
-    })
+    let getRequest = {
+        method:'get',
+        headers:{ 
+            'Authorization': 'Bearer ' + accessToken
+        },
+        url:url
+    }
+    return axios(getRequest)
 }
 
 
-const patchFunc = async (url, data)=>{
-    return new Promise((res,rej)=>{
-        let patchRequest = {
-            method:'patch',
-            headers:{
-                'Authorization': 'Bearer ' + accessToken,
-                'Content-Type': 'application/json'
-            },
-            url:url,
-            data:JSON.stringify(data)
-        }
-        res(axios(patchRequest).catch(err=>{rej(err)}))
-    })
+const patchFunc = (url, data)=>{
+    let patchRequest = {
+        method:'patch',
+        headers:{
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/json'
+        },
+        url:url,
+        data:JSON.stringify(data)
+    }
+    return axios(patchRequest)
 }
 
 const appendToBackup = (addition, logFile)=>{
@@ -266,7 +262,7 @@ async function removeOverrides(listing){
                 }
             ), "./patches.txt")
     
-            patchFunc("https://api.stok.ly/v0/listings/" + listing.data.listingId, {data:data}).catch(err=>{console.log(err)})
+            await patchFunc("https://api.stok.ly/v0/listings/" + listing.data.listingId, {data:data}).catch(err=>{console.log(err)})
     
             console.log("Done " + listing.data.sku + " || " + listing.data.listingId + " (" + done + " out of " + total + ")")
     
