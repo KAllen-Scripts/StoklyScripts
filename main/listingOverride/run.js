@@ -124,20 +124,32 @@ async function loopThrough(callback){
 
 async function checkData(listing){
 
-    let attLib = {}
-
     let mainItemAttributes = await getFunc(encodeURI("https://api.stok.ly/v0/items/" + listing.data.itemId + "/attributes")).catch(err=>{console.log(err)})
 
     let mainItemBasicDetails = await getFunc(encodeURI("https://api.stok.ly/v0/items/" + listing.data.itemId)).catch(err=>{console.log(err)})
 
-        attLib.listing = {
-            name:listing.data.data.name,
-            sku:listing.data.data.sku,
-            barcode:listing.data.data.barcode,
-            description:listing.data.data.description,
-            manufacturer:listing.data.data.manufacturer
+    let mainItemImages = await getFunc(encodeURI("https://api.stok.ly/v0/items/" + listing.data.itemId + "/images")).catch(err=>{console.log(err)})
+
+    let attLib = {
+        listing:{},
+        item:{}
+    }
+
+    //Gets all Listing Attributes
+
+    for (const att of Object.keys(listing.data.data)){
+        if(!["images",'attributes','isSold','weight'].includes(att)){
+            if(Array.isArray(listing.data.data[att])){
+                for (const i in listing.data.data[att]){
+                    attLib.listing[att + ' - ' + (parseInt(i) + 1)] = listing.data.data[att][i]
+                }
+            } else {
+                attLib.listing[att] = listing.data.data[att]
+            }
         }
-        try{attLib.listing.weight = listing.data.data.weight.amount}catch{}
+    }
+
+    try{attLib.listing.weight = listing.data.data.weight.amount}catch{}
     
     if (listing.data.data.attributes != undefined){
         for (const att of listing.data.data.attributes){
@@ -145,18 +157,38 @@ async function checkData(listing){
         }   
     }
 
-    attLib.item = {
-        name:mainItemBasicDetails.data.data.name,
-        sku:mainItemBasicDetails.data.data.sku,
-        barcode:mainItemBasicDetails.data.data.barcode,
-        description:mainItemBasicDetails.data.data.description,
-        manufacturer:mainItemBasicDetails.data.data.manufacturer,
-        weight:mainItemBasicDetails.data.data.weight
+    if (listing.data.data.images != undefined){
+        for (const i in listing.data.data.images){
+            attLib.listing['image - ' + (parseInt(i) + 1)] = listing.data.data.images[i].uri
+        }   
     }
+
+
+    //Gets all item Attributes
+
+    for (const att of Object.keys(mainItemBasicDetails.data.data)){
+        if(!["images",'attributes','unitOfMeasureCount','preferredStorageLocationCount','onOrder','onHand','sold','allocated','quarantined','available','status','accountkey','inventoryThresholdCount','storageLocationCount','averageCostPriceCurrency','averageCostPrice'].includes(att)){
+            if(Array.isArray(mainItemBasicDetails.data.data[att])){
+                for (const i in mainItemBasicDetails.data.data[att]){
+                    attLib.item[att + ' - ' + (parseInt(i) + 1)] = mainItemBasicDetails.data.data[att][i]
+                }
+            } else {
+                attLib.item[att] = mainItemBasicDetails.data.data[att]
+            }
+        }
+    }
+
+    for (const i in mainItemImages.data.data){
+        attLib.item['image - ' + (parseInt(i) + 1)] = mainItemImages.data.data[i].uri
+    }   
 
     for (const att of mainItemAttributes.data.data){
         attLib.item[att.itemAttributeName] = att.value
     }
+
+
+
+    //Add to main lib and log results
 
     attLibMain[mainItemBasicDetails.data.data.sku] = attLib
 
