@@ -3,17 +3,10 @@ const fs = require("fs");
 
 const accessToken = process.argv[2];
 const channelID = process.argv[3];
-const sleepTime = process.argv[4] == undefined ? 0 : process.argv[4];
-
-let overRideAtts = []
-let excludeArr = []
 
 let length = 0
 let done = 0
 let total
-let attributeNames
-let attLibMain = {}
-let skipped = 0
 
 const getFunc = async (url)=>{
     let getRequest = {
@@ -78,7 +71,9 @@ async function changeSKU(listingURL){
     await new Promise(resolve => setTimeout(resolve, 500))
     await patchFunc(listingURL, {data:dataBackup})
 
-    console.log(listingURL)
+    done += 1
+
+    console.log(listingURL + ' (' + done + '/' + total + ')')
 
 }
 
