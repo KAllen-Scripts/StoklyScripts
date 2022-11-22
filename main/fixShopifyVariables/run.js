@@ -32,8 +32,7 @@ const patchFunc = (url, data)=>{
         url:url,
         data:JSON.stringify(data)
     }
-    console.log(patchRequest)
-    // return axios(patchRequest)
+    return axios(patchRequest)
 }
 
 const appendToBackup = (addition, logFile)=>{
@@ -100,7 +99,7 @@ async function channelOff(channelID){
 
     data.syncData = false
 
-    await patchFunc("https://api.stok.ly/v0/channels/" + channelID, {data:data})
+    await patchFunc("https://api.stok.ly/v0/channels/" + channelID, data)
 }
 
 (async ()=>{
@@ -109,27 +108,27 @@ async function channelOff(channelID){
 
     await channelOff(channelID)
 
-    // let page = 0
-    // done = 0
+    let page = 0
+    done = 0
 
-    // do{
+    do{
 
-    //     let res = await getFunc(encodeURI("https://api.stok.ly/v0/channels/" + channelID + "/listings?size=100&page=" + page + "&sortDirection=ASC&sortField=name&filter=([status]!={2})")).catch(err=>{console.log(err)})
+        let res = await getFunc(encodeURI("https://api.stok.ly/v0/channels/" + channelID + "/listings?size=100&page=" + page + "&sortDirection=ASC&sortField=name&filter=([status]!={2})")).catch(err=>{console.log(err)})
 
-    //     total = res.data.metadata.count
+        total = res.data.metadata.count
 
-    //     length = res.data.data.length
-    //     page += 1
+        length = res.data.data.length
+        page += 1
 
-    //     for (const item of res.data.data){
+        for (const item of res.data.data){
 
-    //         await changeSKU("https://api.stok.ly/v0/listings/" + item.listingId).catch(err=>{console.log(err)})
+            await changeSKU("https://api.stok.ly/v0/listings/" + item.listingId).catch(err=>{console.log(err)})
 
-    //     }
+        }
 
-    // }while (length > 0)
+    }while (length > 0)
 
-    // await patchFunc("https://api.stok.ly/v0/channels/" + channelID, {data:channelDataBackup})
+    await patchFunc("https://api.stok.ly/v0/channels/" + channelID, channelDataBackup)
 
 })()
 
