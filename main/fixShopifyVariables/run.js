@@ -8,6 +8,8 @@ let length = 0
 let done = 0
 let total
 
+let channelDataBackup
+
 const getFunc = async (url)=>{
     let getRequest = {
         method:'get',
@@ -30,7 +32,8 @@ const patchFunc = (url, data)=>{
         url:url,
         data:JSON.stringify(data)
     }
-    return axios(patchRequest)
+    console.log(patchRequest)
+    // return axios(patchRequest)
 }
 
 const appendToBackup = (addition, logFile)=>{
@@ -48,24 +51,24 @@ async function changeSKU(listingURL){
 
     let data = {}
 
-    for (const key of Object.keys(response.data.data)){
-        if(!["stokly_type","variableItemId","variantListingIds","images"].includes(key)){
-            data[key] = response.data.data[key]
+    for (const key of Object.keys(response.data.data.data)){
+        if(!["stokly_type","variableItemId","variantListingIds","images","itemId"].includes(key)){
+            data[key] = response.data.data.data[key]
         }
     }
 
-    if (response.data.data.images != undefined){
+    if (response.data.data.data.images != undefined){
         data.images = []
         for(const i of response.data.data.images){
             data.images.push({uri:i.uri})
         }
     }
 
-    let oldSKU = data.sku == undefined ? response.data.sku : data.sku
+    data.channelSpecifics = []
 
     let dataBackup = structuredClone(data)
 
-    data.sku = oldSKU + '.'
+    data.sku = data.sku == undefined ? response.data.data.sku + '.' : data.sku + '.'
 
     await patchFunc(listingURL, {data:data})
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -77,30 +80,56 @@ async function changeSKU(listingURL){
 
 }
 
+async function channelOff(channelID){
+    let channelData = await getFunc("https://api.stok.ly/v0/channels/" + channelID)
+
+    let data = {
+        name:channelData.data.data.name,
+        manageInventory: channelData.data.data.manageInventory,
+        syncData:channelData.data.data.syncData,
+        data:channelData.data.data.data,
+        inventoryLocationIds:channelData.data.data.inventoryLocationIds
+
+    }
+
+    if (channelData.data.data.defaultInventory != undefined){
+        data.defaultInventory = channelData.data.data.defaultInventory
+    }
+
+    channelDataBackup = structuredClone(data)
+
+    data.syncData = false
+
+    await patchFunc("https://api.stok.ly/v0/channels/" + channelID, {data:data})
+}
 
 (async ()=>{
 
-    appendToBackup("//////////////////////////////////////////////////////////////////////////////////\nBackups for " + new Date() + "\n//////////////////////////////////////////////////////////////////////////////////\n", "./backup.txt")
+    appendToBackup("\n//////////////////////////////////////////////////////////////////////////////////\nBackups for " + new Date() + "\n//////////////////////////////////////////////////////////////////////////////////\n", "./backup.txt")
 
-    let page = 0
-    done = 0
+    await channelOff(channelID)
 
-    do{
+    // let page = 0
+    // done = 0
 
-        let res = await getFunc(encodeURI("https://api.stok.ly/v0/channels/" + channelID + "/listings?size=100&page=" + page + "&sortDirection=ASC&sortField=name&filter=([status]!={2})")).catch(err=>{console.log(err)})
+    // do{
 
-        total = res.data.metadata.count
+    //     let res = await getFunc(encodeURI("https://api.stok.ly/v0/channels/" + channelID + "/listings?size=100&page=" + page + "&sortDirection=ASC&sortField=name&filter=([status]!={2})")).catch(err=>{console.log(err)})
 
-        length = res.data.data.length
-        page += 1
+    //     total = res.data.metadata.count
 
-        for (const item of res.data.data){
+    //     length = res.data.data.length
+    //     page += 1
 
-            await changeSKU("https://api.stok.ly/v0/listings/" + item.listingId).catch(err=>{console.log(err)})
+    //     for (const item of res.data.data){
 
-        }
+    //         await changeSKU("https://api.stok.ly/v0/listings/" + item.listingId).catch(err=>{console.log(err)})
 
-    }while (length > 0)
+    //     }
+
+    // }while (length > 0)
+
+    // await patchFunc("https://api.stok.ly/v0/channels/" + channelID, {data:channelDataBackup})
 
 })()
 
