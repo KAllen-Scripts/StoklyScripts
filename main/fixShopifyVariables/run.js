@@ -43,35 +43,38 @@ const appendToBackup = (addition, logFile)=>{
 }
 
 
-async function changeSKU(listingURL){
-    let response = await getFunc(listingURL)
+async function changeSKU(listingURL, itemFormat){
 
-    appendToBackup(JSON.stringify(response.data),"./backup.txt")
+    if (itemFormat == 3){
+        let response = await getFunc(listingURL)
 
-    let data = {}
-
-    for (const key of Object.keys(response.data.data.data)){
-        if(!["stokly_type","variableItemId","variantListingIds","images","itemId"].includes(key)){
-            data[key] = response.data.data.data[key]
+        appendToBackup(JSON.stringify(response.data),"./backup.txt")
+    
+        let data = {}
+    
+        for (const key of Object.keys(response.data.data.data)){
+            if(!["stokly_type","variableItemId","variantListingIds","images","itemId"].includes(key)){
+                data[key] = response.data.data.data[key]
+            }
         }
-    }
-
-    if (response.data.data.data.images != undefined){
-        data.images = []
-        for(const i of response.data.data.images){
-            data.images.push({uri:i.uri})
+    
+        if (response.data.data.data.images != undefined){
+            data.images = []
+            for(const i of response.data.data.images){
+                data.images.push({uri:i.uri})
+            }
         }
+    
+        data.channelSpecifics = []
+    
+        let dataBackup = structuredClone(data)
+    
+        data.sku = data.sku == undefined ? response.data.data.sku + '.' : data.sku + '.'
+    
+        await patchFunc(listingURL, {data:data})
+        await new Promise(resolve => setTimeout(resolve, 500))
+        await patchFunc(listingURL, {data:dataBackup})   
     }
-
-    data.channelSpecifics = []
-
-    let dataBackup = structuredClone(data)
-
-    data.sku = data.sku == undefined ? response.data.data.sku + '.' : data.sku + '.'
-
-    await patchFunc(listingURL, {data:data})
-    await new Promise(resolve => setTimeout(resolve, 500))
-    await patchFunc(listingURL, {data:dataBackup})
 
     done += 1
 
@@ -122,7 +125,7 @@ async function channelOff(channelID){
 
         for (const item of res.data.data){
 
-            await changeSKU("https://api.stok.ly/v0/listings/" + item.listingId).catch(err=>{console.log(err)})
+            await changeSKU("https://api.stok.ly/v0/listings/" + item.listingId, item.type).catch(err=>{console.log(err)})
 
         }
 
