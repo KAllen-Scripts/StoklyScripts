@@ -68,9 +68,6 @@ const run = ((jason = defaultIn("./CombineJSON - input.txt"), feedOut = './Combi
         return arrReturn
     }
 
-    fileStream.writeFileSync(feedOut, str)
-    
-
     //loop through each array in arrData. Then loop through each item in those. If the value is 'undefined' then just add a delimiter
     //else encapsulate it, add the delim, and push it to the string
     let str = ""
@@ -88,6 +85,8 @@ const run = ((jason = defaultIn("./CombineJSON - input.txt"), feedOut = './Combi
         //start new line at end of each array
         str += "\r\n"
     }
+
+    fileStream.writeFileSync(feedOut, str)
 
     // function to determine if a given value is an object array
     function isObjectArray(value) {
