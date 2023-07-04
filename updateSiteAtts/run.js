@@ -63,9 +63,7 @@ async function getParameters() {
 
 (async () => {
 
-    await common.authenticate()
-
-    let channelID = await common.askQuestion('Finally, enter the channel ID: ')
+    let channelID = await common.askQuestion('Enter the channel ID: ')
 
     // gets attributes to be over-ridden and to be ignored
     let csvDict = await getParameters()
