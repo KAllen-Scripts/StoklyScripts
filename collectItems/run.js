@@ -4,8 +4,6 @@ const common = require('../common.js')
 
 global.enviroment = 'api.stok.ly'
 
-//test
-
 async function getInput(){
     return new Promise((res,rej)=>{
         let returnArr = []
