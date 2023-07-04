@@ -130,7 +130,7 @@ const authenticate = async ()=>{
         }
 
         try{
-            await requester('get', `https://${enviroment}/v0/items?size=1`)
+            await requester('get', `https://${global.enviroment}/v0/items?size=1`)
             authenticated = true
         } catch {
             console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||\n\nAUTHENTICATION FAILED. TRYING AGAIN\n\n||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
