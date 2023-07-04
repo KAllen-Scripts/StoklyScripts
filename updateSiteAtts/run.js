@@ -1,5 +1,5 @@
 // gets my general purpose library
-const common = require('./common.js');
+const common = require('../common.js');
 const fs = require('fs');
 const csv = require('fast-csv');
 
