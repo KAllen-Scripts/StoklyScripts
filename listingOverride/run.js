@@ -3,7 +3,7 @@ const fs = require('fs');
 const common = require('../common.js');
 const csv = require('fast-csv');
 
-global.enviroment = 'api.stok.ly';
+global.enviroment = 'api.dev.stok.ly';
 global.waitForGets = 1;
 
 async function getInput(){
@@ -43,15 +43,14 @@ async function generateCSV(channelID){
 
     let channelID = await common.askQuestion('Enter the channel ID: ')
 
+    let removeAll = await common.askQuestion('Remove all overrides = 1, or select from CSV = 0: ').then(r=>{return JSON.parse(r)})
+
     let getCSV = await common.askQuestion("Generate compare CSV first? 1 = Yes, 0 = No: ").then(r=>{return JSON.parse(r)})
 
     if(getCSV){
         await generateCSV(channelID)
-        let continueScript = await common.askQuestion('CSV Generated. Type "Continue" to continue, anything else to exit: ').then(r=>{return r.toLowerCase()})
-        if (continueScript != 'continue'){return}
+        let continueScript = await common.askQuestion('CSV Generated. Press ENTER to continue: ').then(r=>{return r.toLowerCase()})
     }
-
-    let removeAll = await common.askQuestion('Remove all overrides = 1, or select from CSV = 0: ').then(r=>{return JSON.parse(r)})
 
     let attributeDict = {}
     await common.loopThrough('Getting attribute lookup', `https://${enviroment}/v0/item-attributes`, 'size=1000', '[status]!={1}', (att)=>{
