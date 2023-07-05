@@ -5,7 +5,6 @@ const csv = require('fast-csv');
 
 global.enviroment = 'api.dev.stok.ly';
 global.waitForGets = 1;
-global.debugMode = 1;
 
 async function getInput(){
     return new Promise((res,rej)=>{
