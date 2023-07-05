@@ -67,6 +67,9 @@ const requester = async (method, url, data) => {
     }
     let d = new Date();
     logWrite.write(`[${(d).toLocaleTimeString("en-gb", dateOptions)}]${JSON.stringify({method:method,url:url,data:data})}\r\n`)
+    if(global.debugMode){
+        console.log(sendRequest)
+    }
     return axios(sendRequest)
 }
 
