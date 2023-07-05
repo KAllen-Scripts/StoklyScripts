@@ -58,9 +58,7 @@ async function generateCSV(channelID){
         attributeDict[att.itemAttributeId] = att.name.toLowerCase()
     })
 
-    await common.loopThrough('Updating Listings', `https://api.dev.stok.ly/v0/channels/${channelID}/listings`, 'size=1000', '[status]!={2}', async (listing)=>{
-        if (listing.listingId != 'ba655556-3b49-45ef-b828-0327fe624ead'){return}
-    
+    await common.loopThrough('Updating Listings', `https://api.dev.stok.ly/v0/channels/${channelID}/listings`, 'size=1000', '[status]!={2}', async (listing)=>{  
         let patchData = {channelSpecifics:[]}
         let listingData = await common.requester('get', `https://api.dev.stok.ly/v0/listings/${listing.listingId}`).then(r=>{return r.data.data.data})
         if(listingData.listIndividually != undefined){patchData.listIndividually = listingData.listIndividually}
