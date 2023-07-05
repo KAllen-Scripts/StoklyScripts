@@ -49,7 +49,7 @@ const requester = async (method, url, data) => {
 
     if(!accessToken.accessToken){await authenticate()}
 
-    if (Date.now() > (new Date(((accessToken?.expiry) || 0).getTime())-60000) && authMethod) {
+    if (new Date(Date.now()+60000) > (new Date((accessToken?.expiry) || 0)) && authMethod) {
         await getAccessToken()
     }
 
