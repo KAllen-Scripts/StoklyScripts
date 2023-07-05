@@ -5,7 +5,7 @@ const common = require('../common.js');
 const csv = require('fast-csv');
 
 //Global varsiable used for debugging
-global.enviroment = 'api.dev.stok.ly';
+global.enviroment = 'api.stok.ly';
 global.waitForGets = 1;
 
 //Get the values formt he CSV and return as promise which resolves to object
