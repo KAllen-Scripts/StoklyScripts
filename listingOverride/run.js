@@ -48,9 +48,6 @@ async function generateCSV(channelID){
 
 (async ()=>{
 
-    //Get user defined parameters
-    let inputVals = await getInput()
-
     let channelID = await common.askQuestion('Enter the channel ID: ')
 
     let removeAll = await common.askQuestion('Remove all overrides = 1, or select from CSV = 0: ').then(r=>{return JSON.parse(r)})
@@ -63,6 +60,10 @@ async function generateCSV(channelID){
         await generateCSV(channelID)
         await common.askQuestion('CSV Generated. Press ENTER to continue: ').then(r=>{return r.toLowerCase()})
     }
+
+    //Get user defined parameters
+    //This is done after the CSV is made so the user can update it after reviewing the data
+    let inputVals = await getInput()
 
     //If the user has defined item to skip, get all items and create sku to itemID lookup
     if (inputVals.itemsToSkip.length > 0){
