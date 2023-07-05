@@ -19,8 +19,8 @@ async function getInput(){
         .on('data',  row => {
             stream.pause()
 
-            if(row.Attribute != ''){returnObj.attsToRemove.push(row.Attribute.toLowerCase())}
-            if(row.Items != ''){returnObj.itemsToSkip.push(row.Items.toLowerCase())}
+            if(row.Attribute != ''){returnObj.attsToRemove.push((row.Attribute.toLowerCase()).trim())}
+            if(row.Items != ''){returnObj.itemsToSkip.push((row.Items.toLowerCase()).trim())}
 
             stream.resume()
         })
