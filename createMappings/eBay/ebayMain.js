@@ -83,7 +83,7 @@ let run = async (channel, scanID)=> {
     for (const attribute of Object.keys(attObj)){
         if(attribute.toLowerCase() != 'mpn' && attribute.toLowerCase() != 'ean'){
             postObj.attributeGroups[0].attributes.push({
-                localAttributeId: attObj[attribute],
+                localAttributeId: attObj[attribute].localID,
                 remoteAttributeId: attribute,
                 priority:postObj.attributeGroups[0].attributes.length,
                 remoteMappableIds: obj.catIDs
