@@ -10,7 +10,7 @@ global.enviroment = 'api.stok.ly';
 
     for (const channel of channelList){
 
-        let scanIDs = await common.requester('get', `https://${global.enviroment}/v1/store-scans?size=1&page=0&sortDirection=DESC&sortField=createdAt&filter=([channelId]=={${channel.channelId}}%26%26[status]=={ready_for_import})`).then(r=>{    
+        let scanIDs = await common.requester('get', `https://${global.enviroment}/v1/store-scans?size=1&page=0&sortDirection=DESC&sortField=createdAt&filter=([channelId]=={${channel.channelId}}%26%26[status]=*{ready_for_import,imported})`).then(r=>{    
             return r.data.data
         })
 
