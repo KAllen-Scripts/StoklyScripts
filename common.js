@@ -78,7 +78,7 @@ const requester = async (method, url, data) => {
 // You pass in a message that is displayed after each item in the list is handled
 // A callback allows you to decide what you are doing with each list item
 // Progress counter included. Does not show if message is blank
-async function loopThrough(message, url, params = '', filter = '', callBack) {
+async function loopThrough(message, url, params = '', filter = '', callBack, incrementPage = true) {
     let page = 0
     let done = 0;
     let total
@@ -88,7 +88,7 @@ async function loopThrough(message, url, params = '', filter = '', callBack) {
             return r.data
         })
         length = res.data.length
-        page += 1
+        if(incrementPage){page += 1}
         for (const item of res.data) {
             // If we want to leave the function early, we can return false from the callback
             var continueLoop = await callBack(item)
