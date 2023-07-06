@@ -91,7 +91,7 @@ let run = async (channel, scanID)=> {
         }
     }
 
-    fs.writeFileSync(`./${channel.channelId}.txt`, JSON.stringify(postObj))
+    // fs.writeFileSync(`./${channel.channelId}.txt`, JSON.stringify(postObj))
 
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, postObj)
 
