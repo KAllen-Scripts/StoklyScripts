@@ -14,7 +14,9 @@ global.enviroment = 'api.stok.ly';
             return r.data.data
         })
 
-        if (scanIDs.length == 0 & !(channel.type == 3 || channel.type == 6)){
+        let scanLength = await common.requester('get',`https://${global.enviroment}/v1/store-scans/${scanIDs[0].storeScanId}/listings`).then(r=>{return r.data.data.length})
+
+        if (scanIDs.length == 0 || scanLength == 0){
             console.log(`Skipping channel with name ${channel.name} as no completed scans are found`)
         } else {
 
