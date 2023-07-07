@@ -31,14 +31,13 @@ global.enviroment = 'api.stok.ly';
 
             switch(channel.type){
                 case 2:
-                    console.log(channel.name)
                     await ebayMain.run(channel, scanIDs[0].storeScanId)
                     break;
                 case 3:
                     
                     break;
                 case 4:
-                    // await wooComMain.run(channel.channelId, scanIDs[0].storeScanId)
+                    await wooComMain.run(channel, scanIDs[0].storeScanId)
                     break;
                     
                 case 5:
