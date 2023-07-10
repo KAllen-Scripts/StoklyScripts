@@ -21,7 +21,7 @@ global.enviroment = 'api.stok.ly';
         }
        
 
-        if ((scanIDs.length == 0 || scanLength == 0) || channel.type != 3){
+        if ((scanIDs.length == 0 || scanLength == 0) && channel.type != 3){
             console.log(`Skipping channel with name ${channel.name} as no completed scans are found`)
         } else {
 
