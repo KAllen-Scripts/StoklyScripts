@@ -2,7 +2,7 @@ const common = require('../../common.js');
 const localCommon = require('../localCommon.js')
 const fs = require('fs');
 
-const run = async (channel, scanID) =>{
+const run = async (channel) =>{
 
     let postObj = {
         "remoteMappables": [
