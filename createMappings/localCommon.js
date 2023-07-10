@@ -78,14 +78,14 @@ async function getAtts(){
 }
 
 
-async function checkSingleAttribute(name){
+async function checkSingleAttribute(name, overRideObj = {}){
     let nameExists = await common.requester('get', `https://${global.enviroment}/v0/item-attributes?filter=(([name]=={${name}}))%26%26([status]!={1})`).then(r=>{return r.data.data})
     if(nameExists.length == 0){
         return common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
             "name": name,
-            "type": 0,
-            "defaultValue": "",
-            "allowedValues": []
+            "type": overRideObj.type || 0,
+            "defaultValue": overRideObj.defaultValue || "",
+            "allowedValues": overRideObj.allowedValues || []
         }).then(r=>{return r.data.data.id})
     }
     return nameExists[0].itemAttributeId
