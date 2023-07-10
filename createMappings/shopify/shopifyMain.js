@@ -132,7 +132,7 @@ const run = async (channel, scanID)=>{
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Product Type',{
-                            "type": 4,
+                            "type": 6,
                             "allowedValues": tagsAndTypes.types
                         }),
                         "remoteAttributeId": "productType",
