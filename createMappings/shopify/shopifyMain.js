@@ -213,8 +213,8 @@ async function getTagsAndTypes(scanID){
             if(!returnObj.tags.includes(tag)){returnObj.tags.push(tag)}
         }
     })
-    returnObj.tags.sort()
-    returnObj.types.sort()
+    returnObj.tags.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
+    returnObj.types.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
     return returnObj
 }
 

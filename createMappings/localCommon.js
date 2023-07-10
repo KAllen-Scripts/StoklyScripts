@@ -57,7 +57,7 @@ function sortObj(unsortedObject){
     for (const property in unsortedObject){
         sortArr.push(unsortedObject[property].localName)
     }
-    sortArr.sort()
+    sortArr.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
     for(const name of sortArr){
         for (const property in unsortedObject){
             if(unsortedObject[property].localName == name){
