@@ -1,5 +1,6 @@
 const ebayMain = require('./eBay/ebayMain.js')
 const wooComMain = require('./wooCom/wooComMain.js')
+const amazonMain = require('./amazon/amazonMain.js')
 const common = require('../common.js')
 
 global.enviroment = 'api.stok.ly';
@@ -34,7 +35,7 @@ global.enviroment = 'api.stok.ly';
                     await ebayMain.run(channel, scanIDs[0].storeScanId)
                     break;
                 case 3:
-                    
+                    await amazonMain.run(channel, scanIDs[0].storeScanId)
                     break;
                 case 4:
                     await wooComMain.run(channel, scanIDs[0].storeScanId)
