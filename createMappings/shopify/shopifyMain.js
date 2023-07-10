@@ -4,6 +4,8 @@ const fs = require('fs');
 
 const run = async (channel, scanID)=>{
 
+    let tagsAndTypes = await getTagsAndTypes(scanID)
+
     let postObj = {
         "remoteMappables": [
             {
@@ -129,7 +131,10 @@ const run = async (channel, scanID)=>{
                         "priority": 13
                     },
                     {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Product Type'),
+                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Product Type',{
+                            "type": 4,
+                            "allowedValues": tagsAndTypes.types
+                        }),
                         "remoteAttributeId": "productType",
                         "remoteMappableIds": [
                             "global"
@@ -137,7 +142,14 @@ const run = async (channel, scanID)=>{
                         "priority": 14
                     },
                     {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Status'),
+                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Status',{
+                            "type": 4,
+                            "allowedValues": [
+                                "active",
+                                "draft",
+                                "archived"
+                            ]
+                        }),
                         "remoteAttributeId": "status",
                         "remoteMappableIds": [
                             "global"
@@ -145,7 +157,10 @@ const run = async (channel, scanID)=>{
                         "priority": 15
                     },
                     {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Tags'),
+                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Tags', {
+                            "type": 4,
+                            "allowedValues": tagsAndTypes.tags
+                        }),
                         "remoteAttributeId": "tags",
                         "remoteMappableIds": [
                             "global"
@@ -184,6 +199,23 @@ const run = async (channel, scanID)=>{
 
     let currentMapping = await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/mappings`).then(r=>{return r.data.data})
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, postObj)
+}
+
+
+async function getTagsAndTypes(scanID){
+    let returnObj = {
+        tags:[],
+        types:[]
+    }
+    await common.loopThrough('gGetting Listing Data', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (listing)=>{
+        if(!returnObj.types.includes(listing.unmappedData.product_type)){returnObj.types.push(listing.unmappedData.product_type)}
+        for(const tag of listing.unmappedData.tags){
+            if(!returnObj.tags.includes(tag)){returnObj.tags.push(tag)}
+        }
+    })
+    returnObj.tags.sort()
+    returnObj.types.sort()
+    return returnObj
 }
 
 module.exports = {run};
