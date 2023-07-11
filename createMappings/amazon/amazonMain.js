@@ -4,7 +4,6 @@ const fs = require('fs');
 
 const run = async (channel) =>{
 
-    //test
     let postObj = {
         "remoteMappables": [
             {
