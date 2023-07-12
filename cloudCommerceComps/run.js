@@ -16,7 +16,7 @@ const stream = fs.createReadStream('./input.csv')
 
         myWrite.write(`"${row.PROD_SKU}",`)
         myWrite.write(`"${row[`ITEM${childCount}_SKULinks`]}",`)
-        myWrite.write(`"${row[`ITEM${childCount}_Quantity`]}",`)
+        myWrite.write(`"${row[`ITEM${childCount}_Quantity`]}"`)
         myWrite.write(`\r\n`)
 
         childCount += 1
