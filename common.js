@@ -70,18 +70,16 @@ const requester = async (method, url, data) => {
     if(global.debugMode){
         console.log(sendRequest)
     }
-    try{
-        var returnObj = await axios(sendRequest)
-    } catch (err) {
-        if(err.response.data.message == 'jwt expired'){
+
+    return axios(sendRequest).catch(async e=>{
+        if(e.response.data.message == 'jwt expired'){
             accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
-            var returnObj = await requester(method, url, data)
+            return requester(method, url, data)
         } else {
-            console.log(err)
+            console.log(e)
         }
-    }
+    })
     
-    return returnObj
 }
 
 
