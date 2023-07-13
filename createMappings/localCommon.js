@@ -13,12 +13,12 @@ async function getAttIDs(attList){
         do{
 
             count += 1
-            let attName = `${attribute}${count == 1 ? '' : ' - ' + count}`
+            let attName = `${attribute.value}${count == 1 ? '' : ' - ' + count}`
 
             if (!(addedAtts.includes(attName.toLowerCase()))){
                 addedAtts.push(attName.toLowerCase())
                 if(indexOfInsensitive(createList, attName) < 1){
-                    createList.push({stoklyName:attName,remoteName:attribute})
+                    createList.push({stoklyName:attName,remoteName:attribute.value,ID:attribute.ID})
                     attAdded = true
                 }
             }
@@ -33,6 +33,7 @@ async function getAttIDs(attList){
         if(attDict[attribute.stoklyName.toLowerCase()] != undefined){
             returnObj[attribute.remoteName].localID = attDict[attribute.stoklyName.toLowerCase()]
             returnObj[attribute.remoteName].localName = attribute.stoklyName.toLowerCase()
+            returnObj[attribute.remoteName].remoteID = attribute.ID
             console.log(`Attribute ${attribute.stoklyName} already exists (${done}/${createList.length})`)
         } else {
             returnObj[attribute.remoteName].localID = await common.requester('post',`https://${enviroment}/v0/item-attributes`, {
@@ -42,6 +43,7 @@ async function getAttIDs(attList){
                 "allowedValues": []
             }).then(r=>{return r.data.data.id})
             returnObj[attribute.remoteName].localName = attribute.stoklyName.toLowerCase()
+            returnObj[attribute.remoteName].remoteID = attribute.ID
             console.log(`Created ${attribute.stoklyName} (${done}/${createList.length})`)
         }
     }
@@ -55,7 +57,7 @@ function sortObj(unsortedObject){
     for (const property in unsortedObject){
         sortArr.push(unsortedObject[property].localName)
     }
-    sortArr.sort()
+    sortArr.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
     for(const name of sortArr){
         for (const property in unsortedObject){
             if(unsortedObject[property].localName == name){
@@ -66,6 +68,7 @@ function sortObj(unsortedObject){
     return sortedObj
 }
 
+
 async function getAtts(){
     let returnObj = {}
     await common.loopThrough('Getting Attributes', `https://${enviroment}/v0/item-attributes`, 'size=1000', '[status]!={1}', function(attribute){
@@ -74,6 +77,21 @@ async function getAtts(){
     return returnObj
 }
 
+
+async function checkSingleAttribute(name, overRideObj = {}){
+    let nameExists = await common.requester('get', `https://${global.enviroment}/v0/item-attributes?filter=(([name]=={${name}}))%26%26([status]!={1})`).then(r=>{return r.data.data})
+    if(nameExists.length == 0){
+        return common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
+            "name": name,
+            "type": overRideObj.type || 0,
+            "defaultValue": overRideObj.defaultValue || "",
+            "allowedValues": overRideObj.allowedValues || []
+        }).then(r=>{return r.data.data.id})
+    }
+    return nameExists[0].itemAttributeId
+}
+
 module.exports = {
-    getAttIDs
+    getAttIDs,
+    checkSingleAttribute
 };

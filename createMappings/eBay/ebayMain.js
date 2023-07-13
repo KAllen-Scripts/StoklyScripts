@@ -3,21 +3,7 @@ const localCommon = require('../localCommon.js');
 
 const fs = require('fs');
 
-let run = async (channel, scanID)=> {
-
-    async function checkPriceExists(name){
-        let nameExists = await common.requester('get', `https://${global.enviroment}/v0/item-attributes?filter=(([name]::{${name + ' - Price'}}))&&([status]!={1})`).then(r=>{return r.data.data})
-        if(nameExists.length == 0){
-            return common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
-                "name": `${name} - Price`,
-                "type": 0,
-                "defaultValue": "",
-                "allowedValues": []
-            }).then(r=>{return r.data.data.id})
-        }
-        return nameExists[0].itemAttributeId
-    }
-    
+let run = async (channel, scanID)=> {    
 
     let obj = await getData(scanID)
 
@@ -58,7 +44,7 @@ let run = async (channel, scanID)=> {
                     "priority": 0
                 },
                 {
-                    "localAttributeId": await checkPriceExists(channel.name),
+                    "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Price'),
                     "remoteAttributeId": "StartPrice",
                     "remoteMappableIds": obj.catIDs,
                     "priority": 5
@@ -107,7 +93,8 @@ const getData = async (scanID)=>{
             let outArray = {
                 catIDs:[],
                 attributes:[],
-                categories:[]
+                categories:[],
+                attTrack:[]
             }
 
             await common.loopThrough('Got unmapped Data for', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (item)=>{
@@ -121,16 +108,18 @@ const getData = async (scanID)=>{
 
                 if (item.unmappedData.ItemSpecifics != undefined){
                     for (const attribute of item.unmappedData.ItemSpecifics){
-                        if (!(outArray.attributes.includes(attribute.Name))){
-                            outArray.attributes.push(attribute.Name)
+                        if (!(outArray.attTrack.includes(attribute.Name)) && attribute.Name != 'DescriptionTemplate'){
+                            outArray.attributes.push({value:attribute.Name,ID:outArray.attributes.length})
+                            outArray.attTrack.push(attribute.Name)
                         }
                     }
                 }
 
                 if (item.unmappedData.Variations != undefined){
                     for (const attribute of item.unmappedData.Variations.VariationSpecificsSet){
-                        if (!(outArray.attributes.includes(attribute.Name))){
-                            outArray.attributes.push(attribute.Name)
+                        if (!(outArray.attTrack.includes(attribute.Name)) && attribute.Name != 'DescriptionTemplate'){
+                            outArray.attributes.push({value:attribute.Name,ID:outArray.attributes.length})
+                            outArray.attTrack.push(attribute.Name)
                         }
                     }
                 }

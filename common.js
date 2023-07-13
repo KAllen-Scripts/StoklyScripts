@@ -44,7 +44,7 @@ const getAccessToken = async () => {
     })
 }
 
-// All purpose requester function. Pass in a method, url, and data object. Waits for sleep function to resolve then returns a promise to axios
+// All purpose requester function. Pass in a method, url, and data object. Waits for sleep function to resolve then returns a response from axios
 const requester = async (method, url, data) => {
 
     if(!accessToken.accessToken){await authenticate()}
@@ -70,7 +70,16 @@ const requester = async (method, url, data) => {
     if(global.debugMode){
         console.log(sendRequest)
     }
-    return axios(sendRequest)
+
+    return axios(sendRequest).catch(async e=>{
+        if(e.response.data.message == 'jwt expired'){
+            accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
+            return requester(method, url, data)
+        } else {
+            console.log(e)
+        }
+    })
+    
 }
 
 
