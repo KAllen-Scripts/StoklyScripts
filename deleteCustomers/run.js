@@ -1,4 +1,4 @@
-global.sleepTimeOverride = 500;
+global.sleepTimeOverride = 200;
 global.enviroment = 'api.stok.ly';
 const common = require('../common.js');
 
