@@ -30,7 +30,7 @@ async function getAttIDs(attList){
     for (const attribute of createList){
         done += 1
         returnObj[attribute.remoteName] = {}
-        if(attDict[attribute.stoklyName.toLowerCase()] != undefined){
+        if(attDict[(attribute.stoklyName.toLowerCase()).normalize("NFD").replace(/[\u0300-\u036f]/g, "")] != undefined){
             returnObj[attribute.remoteName].localID = attDict[attribute.stoklyName.toLowerCase()]
             returnObj[attribute.remoteName].localName = attribute.stoklyName.toLowerCase()
             returnObj[attribute.remoteName].remoteID = attribute.ID
@@ -72,7 +72,7 @@ function sortObj(unsortedObject){
 async function getAtts(){
     let returnObj = {}
     await common.loopThrough('Getting Attributes', `https://${enviroment}/v0/item-attributes`, 'size=1000', '[status]!={1}', function(attribute){
-        returnObj[attribute.name.toLowerCase()] = attribute.itemAttributeId
+        returnObj[(attribute.name.toLowerCase()).normalize("NFD").replace(/[\u0300-\u036f]/g, "")] = attribute.itemAttributeId
     })
     return returnObj
 }
