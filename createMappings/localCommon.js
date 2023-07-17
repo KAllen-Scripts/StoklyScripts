@@ -13,7 +13,7 @@ async function getAttIDs(attList){
         do{
 
             count += 1
-            let attName = `${attribute.value}${count == 1 ? '' : ' - ' + count}`
+            let attName = `${(attribute.value).normalize("NFD").replace(/[\u0300-\u036f]/g, "")}${count == 1 ? '' : ' - ' + count}`
 
             if (!(addedAtts.includes(attName.toLowerCase()))){
                 addedAtts.push(attName.toLowerCase())
