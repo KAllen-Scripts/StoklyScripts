@@ -78,11 +78,11 @@ const requester = async (method, url, data, attempt = 2) => {
         } else if (attempt) {
             let tryAgain
             console.log(e)
-            if(attempt != 2){
+            if(attempt >= 2){
+                tryAgain = attempt - 1
+            } else {
                 tryAgain = await askQuestion(`Request Failed. 1 to try again, 0 to give up: `).then(r=>{return JSON.parse(r)})
-            } else (
-                tryAgain = 1
-            )
+            }
             await sleep(3000)
             return requester(method, url, data, tryAgain)
         } else {
