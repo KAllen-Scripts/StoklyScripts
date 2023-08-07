@@ -8,9 +8,24 @@ global.enviroment = 'api.stok.ly';
 
 (async ()=>{
 
+    let doAll = await common.askQuestion(`Do all Channels? 1 = Yes, 0 = No: `).then(r=>{return JSON.parse(r)})
+
+    if(!doAll){
+        var channelNameList = []
+        do{
+            var channelName = await common.askQuestion(`Add the name of a channel you wish to do. Type 'Continue' to proceed: `).then(r=>{return r.toLowerCase()})
+            if(channelName != 'continue'){channelNameList.push(channelName)}
+        } while (channelName != 'continue')
+        
+    }
+
     let channelList = await common.requester('get', `https://${global.enviroment}/v0/channels?size=1000&filter=[status]!={2}`).then(r=>{return r.data.data})
 
     for (const channel of channelList){
+
+        if((!doAll && !channelNameList.includes(channel.name.toLowerCase())) || channel.type == 0){continue}
+
+        console.log(channel.name)
 
         let scanIDs = await common.requester('get', `https://${global.enviroment}/v1/store-scans?size=1&page=0&sortDirection=DESC&sortField=createdAt&filter=([channelId]=={${channel.channelId}}%26%26[status]=*{ready_for_import,imported})`).then(r=>{    
             return r.data.data
@@ -21,7 +36,7 @@ global.enviroment = 'api.stok.ly';
         }
        
 
-        if ((scanIDs.length == 0 || scanLength == 0) && channel.type != 3){
+        if (scanIDs.length == 0 || scanLength == 0){
             console.log(`Skipping channel with name ${channel.name} as no completed scans are found`)
         } else {
 
