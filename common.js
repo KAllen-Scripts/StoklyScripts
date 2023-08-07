@@ -76,6 +76,7 @@ const requester = async (method, url, data, attempt = 1) => {
             accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
             return requester(method, url, data)
         } else if (attempt) {
+            console.log(e)
             let tryAgain = await askQuestion(`Request Failed. 1 to try again, 0 to give up: `).then(r=>{return JSON.parse(r)})
             await sleep(3000)
             return requester(method, url, data, tryAgain)
