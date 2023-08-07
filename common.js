@@ -81,7 +81,7 @@ const requester = async (method, url, data, attempt = 2) => {
             if(attempt >= 2){
                 tryAgain = attempt - 1
             } else {
-                tryAgain = await askQuestion(`Request Failed. 1 to try again, 0 to give up: `).then(r=>{return JSON.parse(r)})
+                tryAgain = await askQuestion(`Request Failed. Enter the number of times you want to retry, or 0 to give up: `).then(r=>{return parseInt(r)})
             }
             await sleep(3000)
             return requester(method, url, data, tryAgain)
