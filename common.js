@@ -45,7 +45,7 @@ const getAccessToken = async () => {
 }
 
 // All purpose requester function. Pass in a method, url, and data object. Waits for sleep function to resolve then returns a response from axios
-const requester = async (method, url, data) => {
+const requester = async (method, url, data, attempt = 1) => {
 
     if(!accessToken.accessToken){await authenticate()}
 
@@ -75,6 +75,10 @@ const requester = async (method, url, data) => {
         if(e.response.data.message == 'jwt expired'){
             accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
             return requester(method, url, data)
+        } else if (attempt) {
+            let tryAgain = await askQuestion(`Request Failed. 1 to try again, 0 to give up: `).then(r=>{return JSON.parse(r)})
+            await sleep(3000)
+            return requester(method, url, data, tryAgain)
         } else {
             console.log(e)
         }
