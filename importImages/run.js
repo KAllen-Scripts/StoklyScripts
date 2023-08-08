@@ -85,7 +85,7 @@ async function getImages(source, accountKey, nameDelim) {
     let matchProperty = await common.askQuestion(`How are we looking up the items? 1 = SKU, 0 = Barcode: `).then(r=>{return JSON.parse(r)})
 
     let nameDelim = await common.askQuestion(`Some items may have more than one image.\n\n`+
-    `For example, you may have 'mySKU-1' and 'mySKU-2'\n\n`+
+    `For example, you may have 'mySKU-1' and 'mySKU-2' in the image folder\n\n`+
     `Enter the character used as the delimter between the SKU and the number, or just press enter if N/A: `)
     if (nameDelim == ''){nameDelim = 'nullPlaceHolder'}
     
