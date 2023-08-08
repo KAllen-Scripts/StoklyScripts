@@ -1,6 +1,7 @@
 const compress_images = require("compress-images");
 const fs = require("fs");
 const common = require('../common.js');
+const path = require('path');
 
 global.enviroment = 'api.stok.ly';
 
@@ -39,7 +40,7 @@ async function readdir(directory) {
     }
 }
 
-async function getImages(source, accountKey) {
+async function getImages(source, accountKey, nameDelim) {
 
     let dir = await readdir(source);
 
@@ -50,14 +51,9 @@ async function getImages(source, accountKey) {
             await getImages(`./${source}/${file}`);
         } else {
 
-            for(const item in itemDict){
-                if(new RegExp(item,'gmi').test(file)){
-                    var itemName = item
-                    break;
-                }
-            }
+            let itemName = (((path.parse(file).name).split(nameDelim)[0].trim()).toLowerCase())
 
-            if(itemName == undefined){return}
+            if(itemDict[itemName] == undefined){return}
 
             if((fileStat.size * 0.000001) > 2){
                 let result = await compressImgs(`./${source}/${file}`, `./${source}/compressed - `);
@@ -86,6 +82,11 @@ async function getImages(source, accountKey) {
 
     let matchProperty = await common.askQuestion(`How are we looking up the items? 1 = SKU, 0 = Barcode: `).then(r=>{return JSON.parse(r)})
 
+    let nameDelim = await common.askQuestion(`Some items may have more than one image.\n\n`+
+    `For example, you may have 'mySKU-1' and 'mySKU-2'\n\n`+
+    `Enter the character used as the delimter between the SKU and the number, or just press enter if N/A: `)
+    if (nameDelim == ''){nameDelim = 'nullPlaceHolder'}
+    
     let accountKey = await common.askQuestion("Enter the account Key: ")
 
     await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, 'size=1000', `[status]!={1}`, async (item)=>{
@@ -96,7 +97,7 @@ async function getImages(source, accountKey) {
         }
     })
 
-    await getImages('./inputFolder', accountKey)
+    await getImages('./inputFolder', accountKey, nameDelim)
 
     for(const item in itemDict){
         console.log(item)
