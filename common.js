@@ -98,6 +98,7 @@ const requester = async (method, url, data, attempt = attemptCount, additionalHe
             return requester(method, url, data, tryAgain)
         } else {
             console.log(e)
+            return e;
         }
     })
     

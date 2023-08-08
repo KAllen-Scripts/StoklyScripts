@@ -138,7 +138,7 @@ async function getParameters() {
         }
 
         try{
-            await common.requester('patch', `https://${global.enviroment}/v0/${listing.type == 3 ? 'variable-items' : 'items'}/${listing.itemId}`, updateBody)
+            await common.requester('patch', `https://${global.enviroment}/v0/${itemData.format == 2 ? 'variable-items' : 'items'}/${listing.itemId}`, updateBody)
         } catch (err){
             miscFailedArr.push({
                 Reason:err.response.data.message,
