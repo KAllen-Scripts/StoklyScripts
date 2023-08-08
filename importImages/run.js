@@ -40,6 +40,7 @@ async function readdir(directory) {
     }
 }
 
+let imgCounter = 0
 async function getImages(source, accountKey, nameDelim) {
 
     let dir = await readdir(source);
@@ -62,7 +63,8 @@ async function getImages(source, accountKey, nameDelim) {
                 filePath = `./${source}/${file}`
             }
             let imgURL = await common.postImage(filePath, accountKey).then(r=>{return r.data.location})
-            console.log(imgURL)
+            imgCounter += 1
+            console.log(`Uploaded image ${imgCounter}`)
             itemDict[itemName].images.push({
                 "uri": imgURL
             })
@@ -91,7 +93,7 @@ async function getImages(source, accountKey, nameDelim) {
 
     await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, 'size=1000', `[status]!={1}`, async (item)=>{
         if(!matchProperty){
-            if(item.barcodes != undefined){itemDict[item.barcode.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}}
+            if(item.barcode != undefined){itemDict[item.barcode.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}}
         } else {
             itemDict[item.sku.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}
         }
@@ -100,22 +102,8 @@ async function getImages(source, accountKey, nameDelim) {
     await getImages('./inputFolder', accountKey, nameDelim)
 
     for(const item in itemDict){
-        console.log(item)
         if(itemDict[item].images.length == 0){continue}
         await common.requester('patch', `https://${global.enviroment}/v0/${itemDict[item].type == 2 ? 'variable-items' : 'items'}/${itemDict[item].itemId}`, {images:itemDict[item].images})
+        console.log(`Updated item ${item}`)
     }
-
-    // let k = await readdir('./compressedImages')
-
-    // for (const t of k){
-    //     let b = fs.statSync(`./compressedImages/${t}`)
-    //     console.log(b.isDirectory())
-    // }
-
-    // let b = fs.statSync('./example.JPG')
-
-    // console.log(b.size * 0.000001)
-    
-    // let i = await compressImgs('./example.JPG')
-    // console.log(i)
 })()
