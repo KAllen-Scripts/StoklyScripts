@@ -2,17 +2,18 @@ const compress_images = require("compress-images");
 const fs = require("fs");
 const common = require('../common.js');
 
-global.enviroment = 'api.stok.ly'
+global.enviroment = 'api.stok.ly';
 
-compAmount = 70
+compAmount = 70;
 
-let itemDict = {}
+let itemDict = {};
 
-async function compressImgs(fileIn, fileOut) {
+function compressImgs(fileIn, fileOut) {
     return new Promise((resolve, reject) => {
         compress_images(
-            fileIn, fileOut,
-            { compress_force: false, statistic: true, autoupdate: true },
+            fileIn,
+            fileOut,
+            { compress_force: false, statistic: false, autoupdate: true },
             false,
             { jpg: { engine: "mozjpeg", command: ["-quality", compAmount] } },
             { png: { engine: "pngquant", command: ["--quality=" + compAmount * 0.4 + "-" + compAmount, "-o"] } },
@@ -20,35 +21,55 @@ async function compressImgs(fileIn, fileOut) {
             {
                 gif: { engine: "gifsicle", command: ["--colors", "64", "--use-col=web"] },
             },
-            async function (err, completed, stat) {
-            if (err) { return resolve(err) }
-            return resolve ({com: await completed, stat: await stat}) 
+            function (error, completed, stat) {
+                if (error) {
+                    return reject(error);
+                }
+                resolve(stat);
             }
         );
-    })
+    });
 }
 
-function readdir(directory) {
-    return new Promise((resolve, reject) => {
-        fs.readdir(directory, (error, folders) => {
-            if (error) { return reject(error) }
-
-            return resolve(folders)
-        })
-    })
+async function readdir(directory) {
+    try {
+        return await fs.promises.readdir(directory);
+    } catch (error) {
+        throw error;
+    }
 }
 
-async function getImages(source){
-    let dir = await readdir(source)
+async function getImages(source, accountKey) {
 
-    for (const file of dir){
-        let fileStat = fs.statSync(`./${source}/${file}`)
-        if(fileStat.isDirectory()){
-            await getImages(`./${source}/${file}`)
+    let dir = await readdir(source);
+
+    for (const file of dir) {
+        let filePath;
+        let fileStat = await fs.promises.stat(`./${source}/${file}`);
+        if (fileStat.isDirectory()) {
+            await getImages(`./${source}/${file}`);
         } else {
-            if((fileStat.size * 0.000001) > 2){
-                let result = await compressImgs(`./${source}/${file}`, `./${source}/compressed - `)
+
+            for(const item in itemDict){
+                if(new RegExp(item,'gmi').test(file)){
+                    var itemName = item
+                    break;
+                }
             }
+
+            if(itemName == undefined){return}
+
+            if((fileStat.size * 0.000001) > 2){
+                let result = await compressImgs(`./${source}/${file}`, `./${source}/compressed - `);
+                filePath = result.path_out_new
+            } else {
+                filePath = `./${source}/${file}`
+            }
+            let imgURL = await common.postImage(filePath, accountKey).then(r=>{return r.data.location})
+            console.log(imgURL)
+            itemDict[itemName].images.push({
+                "uri": imgURL
+            })
         }
     }
 }
@@ -65,15 +86,23 @@ async function getImages(source){
 
     let matchProperty = await common.askQuestion(`How are we looking up the items? 1 = SKU, 0 = Barcode: `).then(r=>{return JSON.parse(r)})
 
-    // await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, '', `[status]!={1}`, async (item)=>{
-    //     if(!matchProperty){
-    //         if(item.barcodes != undefined){itemDict[item.barcode] = {itemId:item.itemId}}
-    //     } else {
-    //         itemDict[item.sku] = {itemId:item.itemId}
-    //     }
-    // })
+    let accountKey = await common.askQuestion("Enter the account Key: ")
 
-    await getImages('./inputFolder')
+    await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, 'size=1000', `[status]!={1}`, async (item)=>{
+        if(!matchProperty){
+            if(item.barcodes != undefined){itemDict[item.barcode.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}}
+        } else {
+            itemDict[item.sku.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}
+        }
+    })
+
+    await getImages('./inputFolder', accountKey)
+
+    for(const item in itemDict){
+        console.log(item)
+        if(itemDict[item].images.length == 0){continue}
+        await common.requester('patch', `https://${global.enviroment}/v0/${itemDict[item].type == 2 ? 'variable-items' : 'items'}/${itemDict[item].itemId}`, {images:itemDict[item].images})
+    }
 
     // let k = await readdir('./compressedImages')
 

@@ -3,6 +3,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const readline = require("readline");
 const fs = require('fs');
+const FormData = require('form-data');
 
 var accountID
 var secret
@@ -10,6 +11,7 @@ var clientId
 var accessToken = {}
 var sleepTime = global.sleepTimeOverride  || 200
 var authMethod
+var attemptCount = 2
 
 var logWrite = fs.createWriteStream('./log.txt', {flags: 'a'});
 
@@ -44,8 +46,17 @@ const getAccessToken = async () => {
     })
 }
 
+async function postImage(imgURL, accountKey){
+
+    let data = new FormData();
+    data.append('image', fs.createReadStream(imgURL));
+
+    headers = {...data.getHeaders()}
+    return requester('post', `https://${accountKey}.webapp-${global.enviroment}/uploads`, data, attemptCount, headers)
+}
+
 // All purpose requester function. Pass in a method, url, and data object. Waits for sleep function to resolve then returns a response from axios
-const requester = async (method, url, data, attempt = 2) => {
+const requester = async (method, url, data, attempt = attemptCount, additionalHeaders) => {
 
     if(!accessToken.accessToken){await authenticate()}
 
@@ -53,12 +64,12 @@ const requester = async (method, url, data, attempt = 2) => {
         await getAccessToken()
     }
 
+    let headers = additionalHeaders ? additionalHeaders : {'Content-Type': 'application/json'}
+    headers.Authorization = 'Bearer ' + accessToken.accessToken
+
     let sendRequest = {
         method: method,
-        headers: {
-            'Authorization': 'Bearer ' + accessToken.accessToken,
-            'Content-Type': 'application/json'
-        },
+        headers: headers,
         url: url,
         data: data
     }
@@ -169,5 +180,6 @@ module.exports = {
     loopThrough,
     getAccessToken,
     askQuestion,
-    authenticate
+    authenticate,
+    postImage
 };
