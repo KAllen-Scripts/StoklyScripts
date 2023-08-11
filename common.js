@@ -64,7 +64,7 @@ const requester = async (method, url, data, attempt = attemptCount, additionalHe
         await getAccessToken()
     }
 
-    let headers = additionalHeaders ? additionalHeaders : {'Content-Type': 'application/json'}
+    let headers = additionalHeaders || {'Content-Type': 'application/json'}
     headers.Authorization = 'Bearer ' + accessToken.accessToken
 
     let sendRequest = {
