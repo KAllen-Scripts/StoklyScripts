@@ -76,13 +76,8 @@ const requester = async (method, url, data, attempt = attemptCount, additionalHe
     if (!(method == 'get') || global.waitForGets) {
         await sleep(sleepTime)
     }
-    let d = new Date();
-    logWrite.write(`[${(d).toLocaleTimeString("en-gb", dateOptions)}]${JSON.stringify({method:method,url:url,data:data})}\r\n`)
-    if(global.debugMode){
-        console.log(sendRequest)
-    }
 
-    return axios(sendRequest).catch(async e=>{
+    let returnVal = await axios(sendRequest).catch(async e=>{
         if(e.response.data.message == 'jwt expired'){
             accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
             return requester(method, url, data)
@@ -101,6 +96,14 @@ const requester = async (method, url, data, attempt = attemptCount, additionalHe
             return e;
         }
     })
+
+    let d = new Date();
+    logWrite.write(`[${(d).toLocaleTimeString("en-gb", dateOptions)}]${JSON.stringify({REQUEST:{method:method,url:url,data:data},RESPONSE:returnVal.data})}\r\n`)
+    if(global.debugMode){
+        console.log(sendRequest)
+    }
+
+    return returnVal
     
 }
 
