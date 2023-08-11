@@ -122,7 +122,7 @@ async function loopThrough(message, url, params = '', filter = '', callBack, inc
             total = r.data.metadata.count
             return r.data
         })
-        length = res.data.length
+        var length = res.data.length
         if(incrementPage){page += 1}
         for (const item of res.data) {
             // If we want to leave the function early, we can return false from the callback
