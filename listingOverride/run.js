@@ -5,14 +5,14 @@ const common = require('../common.js');
 const csv = require('fast-csv');
 
 //Global varsiable used for debugging
-global.enviroment = 'api.stok.ly';
+global.enviroment = 'api.dev.stok.ly';
 global.waitForGets = 1;
 
 //Get the values from the CSV and return as promise which resolves to object
 //Each header is an object property
 async function getInput(){
     return new Promise((res,rej)=>{
-        let returnObj = {attsToRemove:[],itemsToSkip:[]}
+        let returnObj = {attsToRemove:[],itemsToSkip:[],channelSpecifiicsToRemove:[]}
         const stream = fs.createReadStream('./include.csv')
         .pipe(csv.parse({ headers: true }))
         .on('error', error => console.error(error))
@@ -21,6 +21,7 @@ async function getInput(){
 
             if(row.Attribute != ''){returnObj.attsToRemove.push((row.Attribute.toLowerCase()).trim())}
             if(row.Items != ''){returnObj.itemsToSkip.push((row.Items.toLowerCase()).trim())}
+            if(row['Channel Specifics'] != ''){returnObj.channelSpecifiicsToRemove.push((row['Channel Specifics'].toLowerCase()).trim())}
 
             stream.resume()
         })
@@ -81,14 +82,21 @@ async function generateCSV(channelID){
 
     //Start looping through the listings
     await common.loopThrough('Updating Listings', `https://${global.enviroment}/v0/channels/${channelID}/listings`, 'size=1000', '[status]!={2}', async (listing)=>{
+        if(listing.listingId != 'dfb995a5-0975-4d09-ada7-76e85be6e846'){return}
         //Skip the listing if it links back to an item defined by the user
         if(itemDict && inputVals.itemsToSkip.includes(itemDict[listing.itemId])){return}
         //Start with empty patch data
-        //Not sure what channel specifics do, but they are literally always empty
         let patchData = {channelSpecifics:[]}
         //Get listing Data, assign the listIndividually flag right away to avoid fucking with it when we update
         let listingData = await common.requester('get', `https://${global.enviroment}/v0/listings/${listing.listingId}`).then(r=>{return r.data.data.data})
         if(listingData.listIndividually != undefined){patchData.listIndividually = listingData.listIndividually}
+
+        //Sort through channel specifics
+        for (const specific of (listingData.channelSpecifics || [])){
+            if(!inputVals.channelSpecifiicsToRemove.includes(specific.channelSpecificId)){
+                patchData.channelSpecifics.push(specific)
+            }
+        }
 
         //Don't bother with the rest of this function if we are removing all overrides. Just post the object
         if(removeAll){
@@ -100,7 +108,7 @@ async function generateCSV(channelID){
         //Attributes need to be handled seperately
         //Skip anything that the user has defined we should remove the override for
         for(const property of Object.keys(listingData)){
-            if(['itemId','attributes','stokly_type','listIndividually','variableItemId','variantListingIds'].includes(property) || inputVals.attsToRemove.includes(property.toLowerCase())){continue}
+            if(['itemId','attributes','stokly_type','listIndividually','variableItemId','variantListingIds', 'channelSpecifics'].includes(property) || inputVals.attsToRemove.includes(property.toLowerCase())){continue}
             patchData[property] = listingData[property]
         }
         
@@ -114,6 +122,7 @@ async function generateCSV(channelID){
                 }
             }
         }
+        console.log({data:patchData})
         //Finally update the listing
         await common.requester('patch', `https://${global.enviroment}/v0/listings/${listing.listingId}`, {data:patchData})
     })
