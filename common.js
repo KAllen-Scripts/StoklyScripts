@@ -51,7 +51,7 @@ async function postImage(imgURL, accountKey){
     data.append('image', fs.createReadStream(imgURL));
 
     headers = {...data.getHeaders()}
-    return requester('post', `https://${accountKey}.webapp-${global.enviroment}/uploads`, data, attemptCount, headers)
+    return requester('post', `https://${accountKey}.webapp-${global.enviroment}/uploads`, data, 2, headers)
 }
 
 // All purpose requester function. Pass in a method, url, and data object. Waits for sleep function to resolve then returns a response from axios

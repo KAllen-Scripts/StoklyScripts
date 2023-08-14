@@ -8,6 +8,7 @@ global.enviroment = 'api.stok.ly';
 compAmount = 70;
 
 let itemDict = {};
+let tooLargeArr = [];
 
 function compressImgs(fileIn, fileOut) {
     return new Promise((resolve, reject) => {
@@ -48,6 +49,7 @@ async function getImages(source, accountKey, nameDelim) {
     for (const file of dir) {
         let filePath;
         let fileStat = await fs.promises.stat(`./${source}/${file}`);
+        let tooLarge = false
         if (fileStat.isDirectory()) {
             await getImages(`./${source}/${file}`);
         } else {
@@ -59,15 +61,23 @@ async function getImages(source, accountKey, nameDelim) {
             if((fileStat.size * 0.000001) > 2){
                 let result = await compressImgs(`./${source}/${file}`, `./${source}/compressed - `);
                 filePath = result.path_out_new
+                fileStat = await fs.promises.stat(`./${source}/compressed - `);
+                if((fileStat.size * 0.000001) > 2){
+                    tooLarge = true
+                }
             } else {
                 filePath = `./${source}/${file}`
             }
-            let imgURL = await common.postImage(filePath, accountKey).then(r=>{return r.data.location})
             imgCounter += 1
-            console.log(`Uploaded image ${imgCounter}`)
-            itemDict[itemName].images.push({
-                "uri": imgURL
-            })
+            if(!tooLarge){
+                let imgURL = await common.postImage(filePath, accountKey).then(r=>{return r.data.location})
+                console.log(`Uploaded image ${imgCounter}`)
+                itemDict[itemName].images.push({
+                    "uri": imgURL
+                })
+            } else {
+                tooLargeArr.push(filePath)
+            }
         }
     }
 }
@@ -88,6 +98,8 @@ async function getImages(source, accountKey, nameDelim) {
     `For example, you may have 'mySKU-1' and 'mySKU-2' in the image folder\n\n`+
     `Enter the character used as the delimter between the SKU and the number, or just press enter if N/A: `)
     if (nameDelim == ''){nameDelim = 'nullPlaceHolder'}
+
+    let addOrReplace = await common.askQuestion('Are we adding images or replacing them? 1 = add, 0 = replace: ').then(r=>{return JSON.parse(r)})
     
     let accountKey = await common.askQuestion("Enter the account Key: ")
 
@@ -101,8 +113,17 @@ async function getImages(source, accountKey, nameDelim) {
 
     await getImages('./inputFolder', accountKey, nameDelim)
 
+    if(tooLargeArr.length){console.log(`\x1b[1m${'The following images are too large, even after compression:'}\x1b[0m`)}
+    for(const img of tooLargeArr){
+        console.log(img)
+    }
+
     for(const item in itemDict){
         if(itemDict[item].images.length == 0){continue}
+        if(addOrReplace){
+            let existingImages = await common.requester('get', `https://${global.enviroment}/v0/items/${itemDict[item].itemId}/images`).then(r=>{return r.data.data})
+            itemDict[item].images.push(...existingImages)
+        }
         await common.requester('patch', `https://${global.enviroment}/v0/${itemDict[item].type == 2 ? 'variable-items' : 'items'}/${itemDict[item].itemId}`, {images:itemDict[item].images})
         console.log(`Updated item ${item}`)
     }
