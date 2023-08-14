@@ -20,7 +20,7 @@ async function getInput(){
         .on('data',  row => {
             stream.pause()
 
-                returnArr.push(row.SKU.toLowerCase())
+                returnArr.push(row.Identifier.toLowerCase())
 
             stream.resume()
         })
@@ -141,7 +141,7 @@ async function getImages(source, accountKey, nameDelim) {
 
     await getImages('./inputFolder', accountKey, nameDelim)
 
-    fs.writeFileSync('./updatedItems.csv', '"SKU"\r\n')
+    fs.writeFileSync('./updatedItems.csv', '"Identifier"\r\n')
     let myWrite = fs.createWriteStream('./updatedItems.csv', {flags:'a'})
     for(const item in itemDict){
         if(itemDict[item].images.length == 0 || excludeArr.includes(item)){continue}
