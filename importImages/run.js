@@ -105,9 +105,9 @@ async function getImages(source, accountKey, nameDelim) {
 
     await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, 'size=1000', `[status]!={1}`, async (item)=>{
         if(!matchProperty){
-            if(item.barcode != undefined){itemDict[item.barcode.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}}
+            if(item.barcode != undefined){itemDict[item.barcode.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[], sku:item.sku}}
         } else {
-            itemDict[item.sku.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}
+            itemDict[item.sku.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[], sku:item.sku}
         }
     })
 
