@@ -2,6 +2,7 @@ const compress_images = require("compress-images");
 const fs = require("fs");
 const common = require('../common.js');
 const path = require('path');
+const csv = require('fast-csv');
 
 global.enviroment = 'api.stok.ly';
 
@@ -9,6 +10,25 @@ compAmount = 70;
 
 let itemDict = {};
 let tooLargeArr = [];
+
+async function getInput(){
+    return new Promise((res,rej)=>{
+        let returnArr = []
+        const stream = fs.createReadStream('./exclude.csv')
+        .on('error', error => rej(error))
+        .pipe(csv.parse({ headers: true }))
+        .on('data',  row => {
+            stream.pause()
+
+                returnArr.push(row.SKU.toLowerCase())
+
+            stream.resume()
+        })
+        .on('end', () => {
+            res(returnArr)
+        })
+    })
+}
 
 function compressImgs(fileIn, fileOut) {
     return new Promise((resolve, reject) => {
@@ -90,6 +110,14 @@ async function getImages(source, accountKey, nameDelim) {
         fs.mkdirSync('./inputFolder');
     }
 
+    let excludeArr
+    try{
+        excludeArr = await getInput()
+    } catch {
+        excludeArr = []
+    }
+    
+
     await common.askQuestion(`Move images into 'inputFolder'. If this did not already exist, it has been created. Press ENTER to continue:`)
 
     let matchProperty = await common.askQuestion(`How are we looking up the items? 1 = SKU, 0 = Barcode: `).then(r=>{return JSON.parse(r)})
@@ -105,9 +133,9 @@ async function getImages(source, accountKey, nameDelim) {
 
     await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, 'size=1000', `[status]!={1}`, async (item)=>{
         if(!matchProperty){
-            if(item.barcode != undefined){itemDict[item.barcode.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[], sku:item.sku}}
+            if(item.barcode != undefined){itemDict[item.barcode.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}}
         } else {
-            itemDict[item.sku.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[], sku:item.sku}
+            itemDict[item.sku.toLowerCase()] = {itemId:item.itemId, type:item.format, images:[]}
         }
     })
 
@@ -118,13 +146,16 @@ async function getImages(source, accountKey, nameDelim) {
         console.log(img)
     }
 
+    fs.writeFileSync('./updatedItems.csv', '"SKU"\r\n')
+    let myWrite = fs.createWriteStream('./updatedItems.csv', {flags:'a'})
     for(const item in itemDict){
-        if(itemDict[item].images.length == 0){continue}
+        if(itemDict[item].images.length == 0 || excludeArr.includes(item)){continue}
         if(addOrReplace){
             let existingImages = await common.requester('get', `https://${global.enviroment}/v0/items/${itemDict[item].itemId}/images`).then(r=>{return r.data.data})
             itemDict[item].images.push(...existingImages)
         }
         await common.requester('patch', `https://${global.enviroment}/v0/${itemDict[item].type == 2 ? 'variable-items' : 'items'}/${itemDict[item].itemId}`, {images:itemDict[item].images})
+        myWrite.write(`"${item}"\r\n`)
         console.log(`Updated item ${item}`)
     }
 })()
