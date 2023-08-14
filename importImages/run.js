@@ -141,11 +141,6 @@ async function getImages(source, accountKey, nameDelim) {
 
     await getImages('./inputFolder', accountKey, nameDelim)
 
-    if(tooLargeArr.length){console.log(`\x1b[1m${'The following images are too large, even after compression:'}\x1b[0m`)}
-    for(const img of tooLargeArr){
-        console.log(img)
-    }
-
     fs.writeFileSync('./updatedItems.csv', '"SKU"\r\n')
     let myWrite = fs.createWriteStream('./updatedItems.csv', {flags:'a'})
     for(const item in itemDict){
@@ -158,4 +153,10 @@ async function getImages(source, accountKey, nameDelim) {
         myWrite.write(`"${item}"\r\n`)
         console.log(`Updated item ${item}`)
     }
+
+    if(tooLargeArr.length){console.log(`\x1b[1m${'The following images are too large, even after compression:'}\x1b[0m`)}
+    for(const img of tooLargeArr){
+        console.log(img)
+    }
+
 })()
