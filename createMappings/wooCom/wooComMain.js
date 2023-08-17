@@ -40,7 +40,7 @@ const run = async (channel, scanID)=>{
         {"local": channel.name + ' - Tags',"remote": "tags"}
     ]
 
-    postObj.attributeGroups[0].attributes = await localCommon.addAttributes(standardAtts, customAtts)
+    postObj.attributeGroups[0].attributes = await localCommon.addAttributes(standardAtts, customAtts, ['marketplace'])
 
     for (const attribute in attributeRefs){
         postObj.attributeGroups[0].attributes.push({
