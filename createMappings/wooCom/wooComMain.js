@@ -21,128 +21,26 @@ const run = async (channel, scanID)=>{
 
     let attributeRefs = await localCommon.getAttIDs(attsToCreate)
 
+    let standardAtts = [
+        {local:'sku',remote:'sku'},
+        {local:'name',remote:'name'},
+        {local:'description',remote:'description'},
+        {local:'weight',remote:'weight'}
+    ]
     
+    let customAtts = [
+        {"local": channel.name + ' - Status',"remote": "status"},
+        {"local": channel.name + ' - Featured',"remote": "featured"},
+        {"local": channel.name + ' - Visibility',"remote": "catalog_visibility"},
+        {"local": channel.name + ' - Price',"remote": "regular_price"},
+        {"local": channel.name + ' - Sale Price',"remote": "sale_price"},
+        {"local": channel.name + ' - Categories',"remote": "categories"},
+        {"local": channel.name + ' - Tax Rate',"remote": "tax_status"},
+        {"local": channel.name + ' - Shipping Class',"remote": "shipping_class"},
+        {"local": channel.name + ' - Tags',"remote": "tags"}
+    ]
 
-    let postObj = {
-        "remoteMappables": [
-            {
-                "mappableId": "marketplace",
-                "mappableName": "WooCommerce Products"
-            }
-        ],
-        "attributeGroups": [
-            {
-                "status": "active",
-                "attributes": [
-                    {
-                        "localAttributeId": "sku",
-                        "remoteAttributeId": "sku",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 0
-                    },
-                    {
-                        "localAttributeId": "name",
-                        "remoteAttributeId": "name",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 1
-                    },
-                    {
-                        "localAttributeId": "description",
-                        "remoteAttributeId": "description",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 2
-                    },
-                    {
-                        "localAttributeId": "weight",
-                        "remoteAttributeId": "weight",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 3
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Status'),
-                        "remoteAttributeId": "status",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 4
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Featured'),
-                        "remoteAttributeId": "featured",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 5
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Visibility'),
-                        "remoteAttributeId": "catalog_visibility",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 6
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Price'),
-                        "remoteAttributeId": "regular_price",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 7
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Sale Price'),
-                        "remoteAttributeId": "sale_price",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 8
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Categories'),
-                        "remoteAttributeId": "categories",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 9
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Tax Rate'),
-                        "remoteAttributeId": "tax_status",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 10
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Shipping Class'),
-                        "remoteAttributeId": "shipping_class",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 11
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Tags'),
-                        "remoteAttributeId": "tags",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 12
-                    }
-                ],
-                "index": 0
-            }
-        ]
-    }
+    postObj.attributeGroups[0].attributes = await localCommon.addAttributes(standardAtts, customAtts)
 
     for (const attribute in attributeRefs){
         postObj.attributeGroups[0].attributes.push({
