@@ -91,7 +91,7 @@ async function checkSingleAttribute(name, overRideObj = {}){
     return nameExists[0].itemAttributeId
 }
 
-async function addAttributes(standardAtts, customAtts, remoteMappables, overRideObj = {}){
+async function addAttributes(standardAtts, customAtts, remoteMappables){
     let returnArr = []
     for(const attribute of standardAtts){
         returnArr.push({
@@ -104,7 +104,7 @@ async function addAttributes(standardAtts, customAtts, remoteMappables, overRide
 
     for(const attribute of customAtts){
         returnArr.push({
-            "localAttributeId": await localCommon.checkSingleAttribute(attribute.local, overRideObj),
+            "localAttributeId": await localCommon.checkSingleAttribute(attribute.local, attribute.overRide || {}),
             "remoteAttributeId": attribute.remote,
             "remoteMappableIds": remoteMappables,
             "priority": returnArr.length

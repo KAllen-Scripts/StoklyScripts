@@ -34,10 +34,10 @@ const run = async (channel, scanID)=>{
         {"local": channel.name + ' - Visibility',"remote": "catalog_visibility"},
         {"local": channel.name + ' - Price',"remote": "regular_price"},
         {"local": channel.name + ' - Sale Price',"remote": "sale_price"},
-        {"local": channel.name + ' - Categories',"remote": "categories"},
+        {"local": channel.name + ' - Categories',"remote": "categories",overRide:{"type": 4,"allowedValues": itemsCheck.categories}},
         {"local": channel.name + ' - Tax Rate',"remote": "tax_status"},
         {"local": channel.name + ' - Shipping Class',"remote": "shipping_class"},
-        {"local": channel.name + ' - Tags',"remote": "tags"}
+        {"local": channel.name + ' - Tags',"remote": "tags",overRide:{"type": 4,"allowedValues": itemsCheck.tags}}
     ]
 
     postObj.attributeGroups[0].attributes = await localCommon.addAttributes(standardAtts, customAtts, ['marketplace'])
