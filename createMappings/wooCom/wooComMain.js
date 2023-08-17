@@ -3,7 +3,7 @@ const localCommon = require('../localCommon.js')
 const fs = require('fs');
 
 const run = async (channel, scanID)=>{
-    let itemsCheck = await invalidAtts(scanID)
+    let itemsCheck = await invalidAtts(scanID, channel)
     if (itemsCheck){
         await common.askQuestion('Non-global attributes found. Logged to CSV. Press any key to continue: ')
     }
@@ -160,10 +160,10 @@ const run = async (channel, scanID)=>{
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, postObj)
 };
 
-async function invalidAtts(scanID){
+async function invalidAtts(scanID, channel){
     let invalidFound = false
-    fs.writeFileSync('./wooCom/Invalid Attributes.csv', `"SKU","Name","ListingID","Invalid Attribute","Used for variations"\r\n`)
-    let myWrite = fs.createWriteStream('./wooCom/Invalid Attributes.csv', {flags:'a'})
+    fs.writeFileSync(`./wooCom/Invalid Attributes - ${channel.name}.csv`, `"SKU","Name","ListingID","Invalid Attribute","Used for variations"\r\n`)
+    let myWrite = fs.createWriteStream(`./wooCom/Invalid Attributes - ${channel.name}.csv`, {flags:'a'})
     await common.loopThrough('Checking for invalid Attributes', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (listing)=>{
         for(const attribute of listing.unmappedData.attributes){
             if (attribute.id == 0){
