@@ -21,8 +21,6 @@ const run = async (channel, scanID)=>{
 
     let attributeRefs = await localCommon.getAttIDs(attsToCreate)
 
-    console.log(attributeRefs)
-
     
 
     let postObj = {
