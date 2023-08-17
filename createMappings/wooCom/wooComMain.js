@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const run = async (channel, scanID)=>{
     let itemsCheck = await invalidAtts(scanID, channel)
-    if (itemsCheck){
+    if (itemsCheck.invalidFound){
         await common.askQuestion('Non-global attributes found. Logged to CSV. Press any key to continue: ')
     }
 
@@ -45,7 +45,7 @@ const run = async (channel, scanID)=>{
     for (const attribute in attributeRefs){
         postObj.attributeGroups[0].attributes.push({
             "localAttributeId": attributeRefs[attribute].localID,
-            "remoteAttributeId": attributeRefs[attribute].remoteID,
+            "remoteAttributeId": attributeRefs[attribute].remoteIDs,
             "remoteMappableIds": [
                 "marketplace"
             ],
@@ -57,18 +57,30 @@ const run = async (channel, scanID)=>{
 };
 
 async function invalidAtts(scanID, channel){
-    let invalidFound = false
+    let returnObj = {invalidFound:false, tagsArr:[], categoriesArr:[]}
     fs.writeFileSync(`./wooCom/Invalid Attributes - ${channel.name}.csv`, `"SKU","Name","ListingID","Invalid Attribute","Used for variations"\r\n`)
     let myWrite = fs.createWriteStream(`./wooCom/Invalid Attributes - ${channel.name}.csv`, {flags:'a'})
     await common.loopThrough('Checking for invalid Attributes', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (listing)=>{
         for(const attribute of listing.unmappedData.attributes){
             if (attribute.id == 0){
-                invalidFound = true
+                returnObj.invalidFound = true
                 myWrite.write(`"${listing.sku}","${listing.name}","${listing.scannedListingId}","${attribute.name}","${attribute.variation}"\r\n`)
             }
         }
+        for(const tag of listing.unmappedData.tags){
+            if (returnObj.tagsArr.includes(tag)){
+                returnObj.tagsArr.push(tag)
+            }
+        }
+        for(const category of listing.unmappedData.categories){
+            if (returnObj.categoriesArr.includes(category)){
+                returnObj.categoriesArr.push(category)
+            }
+        }
     })
-    return invalidFound
+    returnObj.tagsArr.sort()
+    returnObj.categoriesArr.sort()
+    return returnObj
 }
 
 module.exports = {run};
