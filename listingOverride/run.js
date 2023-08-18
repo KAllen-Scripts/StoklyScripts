@@ -91,6 +91,12 @@ async function generateCSV(channelID){
         let listingData = await common.requester('get', `https://${global.enviroment}/v0/listings/${listing.listingId}`).then(r=>{return r.data.data.data})
         if(listingData.listIndividually != undefined){patchData.listIndividually = listingData.listIndividually}
 
+        //Don't bother with the rest of this function if we are removing all overrides. Just post the object
+        if(removeAll){
+            await common.requester('patch', `https://${global.enviroment}/v0/listings/${listing.listingId}`, {data:patchData})
+            return
+        }
+
         //Sort through channel specifics
         for (const specific of (listingData.channelSpecifics || [])){
             if(!inputVals.channelSpecifiicsToRemove.includes(specific.channelSpecificId)){
@@ -99,10 +105,6 @@ async function generateCSV(channelID){
         }
 
         //Don't bother with the rest of this function if we are removing all overrides. Just post the object
-        if(removeAll){
-            await common.requester('patch', `https://${global.enviroment}/v0/listings/${listing.listingId}`, {data:patchData})
-            return
-        }
 
         //Loop through the listing data. We skip anything that is not applicable, as I do not know what sending an update for these will do
         //Attributes need to be handled seperately
