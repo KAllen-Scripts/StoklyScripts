@@ -55,7 +55,7 @@ async function postImage(imgURL, accountKey){
 }
 
 // All purpose requester function. Pass in a method, url, and data object. Waits for sleep function to resolve then returns a response from axios
-const requester = async (method, url, data, attempt = 0, additionalHeaders) => {
+const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
 
     if(!accessToken.accessToken){await authenticate()}
 
