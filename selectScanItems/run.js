@@ -15,7 +15,7 @@ global.enviroment = 'api.stok.ly';
 
 
     let postObj = {listings:[]}
-    await common.loopThrough('Getting scanned listings', `https://api.stok.ly/v1/store-scans/${scanID}/listings`, 'size=1000', '(([status]!={imported}))', async (listing)=>{
+    await common.loopThrough('Getting scanned listings', `https://api.stok.ly/v1/store-scans/${scanID}/listings`, 'size=1000', '(([status]=*{scanned}))', async (listing)=>{
         if (['disabled_already_linked',"disabled_unmapped"].includes(listing.importOptions.action)){return}
         if (listing.type == 'variable' && !scanOptions.variables){return}
         if (listing.type == 'simple' && !scanOptions.simples){return}
