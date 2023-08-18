@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const run = async (channel, scanID)=>{
     let itemsCheck = await invalidAtts(scanID, channel)
-    if (itemsCheck){
+    if (itemsCheck.invalidFound){
         await common.askQuestion('Non-global attributes found. Logged to CSV. Press any key to continue: ')
     }
 
@@ -21,133 +21,31 @@ const run = async (channel, scanID)=>{
 
     let attributeRefs = await localCommon.getAttIDs(attsToCreate)
 
+    let standardAtts = [
+        {local:'sku',remote:'sku'},
+        {local:'name',remote:'name'},
+        {local:'description',remote:'description'},
+        {local:'weight',remote:'weight'}
+    ]
     
+    let customAtts = [
+        {"local": channel.name + ' - Status',"remote": "status"},
+        {"local": channel.name + ' - Featured',"remote": "featured"},
+        {"local": channel.name + ' - Visibility',"remote": "catalog_visibility"},
+        {"local": channel.name + ' - Price',"remote": "regular_price"},
+        {"local": channel.name + ' - Sale Price',"remote": "sale_price"},
+        {"local": channel.name + ' - Categories',"remote": "categories",overRide:{"type": 4,"allowedValues": itemsCheck.categories}},
+        {"local": channel.name + ' - Tax Rate',"remote": "tax_status"},
+        {"local": channel.name + ' - Shipping Class',"remote": "shipping_class"},
+        {"local": channel.name + ' - Tags',"remote": "tags",overRide:{"type": 4,"allowedValues": itemsCheck.tags}}
+    ]
 
-    let postObj = {
-        "remoteMappables": [
-            {
-                "mappableId": "marketplace",
-                "mappableName": "WooCommerce Products"
-            }
-        ],
-        "attributeGroups": [
-            {
-                "status": "active",
-                "attributes": [
-                    {
-                        "localAttributeId": "sku",
-                        "remoteAttributeId": "sku",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 0
-                    },
-                    {
-                        "localAttributeId": "name",
-                        "remoteAttributeId": "name",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 1
-                    },
-                    {
-                        "localAttributeId": "description",
-                        "remoteAttributeId": "description",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 2
-                    },
-                    {
-                        "localAttributeId": "weight",
-                        "remoteAttributeId": "weight",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 3
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Status'),
-                        "remoteAttributeId": "status",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 4
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Featured'),
-                        "remoteAttributeId": "featured",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 5
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Visibility'),
-                        "remoteAttributeId": "catalog_visibility",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 6
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Price'),
-                        "remoteAttributeId": "regular_price",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 7
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Sale Price'),
-                        "remoteAttributeId": "sale_price",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 8
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Categories'),
-                        "remoteAttributeId": "categories",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 9
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Tax Rate'),
-                        "remoteAttributeId": "tax_status",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 10
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Shipping Class'),
-                        "remoteAttributeId": "shipping_class",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 11
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Tags'),
-                        "remoteAttributeId": "tags",
-                        "remoteMappableIds": [
-                            "marketplace"
-                        ],
-                        "priority": 12
-                    }
-                ],
-                "index": 0
-            }
-        ]
-    }
+    postObj.attributeGroups[0].attributes = await localCommon.addAttributes(standardAtts, customAtts, ['marketplace'])
 
     for (const attribute in attributeRefs){
         postObj.attributeGroups[0].attributes.push({
             "localAttributeId": attributeRefs[attribute].localID,
-            "remoteAttributeId": attributeRefs[attribute].remoteID,
+            "remoteAttributeId": attributeRefs[attribute].remoteIDs,
             "remoteMappableIds": [
                 "marketplace"
             ],
@@ -159,18 +57,30 @@ const run = async (channel, scanID)=>{
 };
 
 async function invalidAtts(scanID, channel){
-    let invalidFound = false
+    let returnObj = {invalidFound:false, tagsArr:[], categoriesArr:[]}
     fs.writeFileSync(`./wooCom/Invalid Attributes - ${channel.name}.csv`, `"SKU","Name","ListingID","Invalid Attribute","Used for variations"\r\n`)
     let myWrite = fs.createWriteStream(`./wooCom/Invalid Attributes - ${channel.name}.csv`, {flags:'a'})
     await common.loopThrough('Checking for invalid Attributes', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (listing)=>{
         for(const attribute of listing.unmappedData.attributes){
             if (attribute.id == 0){
-                invalidFound = true
+                returnObj.invalidFound = true
                 myWrite.write(`"${listing.sku}","${listing.name}","${listing.scannedListingId}","${attribute.name}","${attribute.variation}"\r\n`)
             }
         }
+        for(const tag of listing.unmappedData.tags){
+            if (returnObj.tagsArr.includes(tag)){
+                returnObj.tagsArr.push(tag)
+            }
+        }
+        for(const category of listing.unmappedData.categories){
+            if (returnObj.categoriesArr.includes(category)){
+                returnObj.categoriesArr.push(category)
+            }
+        }
     })
-    return invalidFound
+    returnObj.tagsArr.sort()
+    returnObj.categoriesArr.sort()
+    return returnObj
 }
 
 module.exports = {run};

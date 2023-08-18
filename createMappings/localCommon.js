@@ -91,7 +91,29 @@ async function checkSingleAttribute(name, overRideObj = {}){
     return nameExists[0].itemAttributeId
 }
 
+async function addAttributes(standardAtts, customAtts, remoteMappables){
+    let returnArr = []
+    for(const attribute of standardAtts){
+        returnArr.push({
+            "localAttributeId": attribute.local,
+            "remoteAttributeId": attribute.remote,
+            "remoteMappableIds": remoteMappables,
+            "priority": returnArr.length
+        })
+    }
+
+    for(const attribute of customAtts){
+        returnArr.push({
+            "localAttributeId": await localCommon.checkSingleAttribute(attribute.local, attribute.overRide || {}),
+            "remoteAttributeId": attribute.remote,
+            "remoteMappableIds": remoteMappables,
+            "priority": returnArr.length
+        })
+    }
+}
+
 module.exports = {
     getAttIDs,
-    checkSingleAttribute
+    checkSingleAttribute,
+    addAttributes
 };
