@@ -82,7 +82,6 @@ async function generateCSV(channelID){
 
     //Start looping through the listings
     await common.loopThrough('Updating Listings', `https://${global.enviroment}/v0/channels/${channelID}/listings`, 'size=1000', '[status]!={2}', async (listing)=>{
-        if(listing.listingId != 'dfb995a5-0975-4d09-ada7-76e85be6e846'){return}
         //Skip the listing if it links back to an item defined by the user
         if(itemDict && inputVals.itemsToSkip.includes(itemDict[listing.itemId])){return}
         //Start with empty patch data
