@@ -143,7 +143,7 @@ const run = async (channel, scanID)=>{
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Status',{
-                            "type": 4,
+                            "type": 6,
                             "allowedValues": [
                                 "active",
                                 "draft",
