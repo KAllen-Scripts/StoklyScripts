@@ -6,8 +6,6 @@ global.enviroment = 'api.stok.ly';
     let scanSource = await common.askQuestion('Enter the ID of the scan we are copying from: ')
     let scanTo = await common.askQuestion('Enter the ID of the scan we are copying to: ')
     
-
-
     let listingRefDict = {stoklyCountArray:[]}
     let itemRefDict = {}
 
@@ -24,15 +22,18 @@ global.enviroment = 'api.stok.ly';
 
 
     await common.loopThrough('Getting scan source', `https://${global.enviroment}/v1/store-scans/${scanSource}/listings`, `size=100&includeUnmappedData=1`, `${channelType == 2 ? '[parentId]=={@null;}' : ''}`, async (listing)=>{
-        if(listing.linkedItemId === undefined){return}
-
         let listingRef = (listing.unmappedData.id || listing.unmappedData['listing-id'] || listing.unmappedData.ItemID)
         
-        listingRefDict[listingRef] = listing.linkedItemId
-        listingRefDict.stoklyCountArray.push(listing.linkedItemId)
+        if(listing.linkedItemId !== undefined){
+            listingRefDict[listingRef] = listing.linkedItemId
+            listingRefDict.stoklyCountArray.push(listing.linkedItemId)
+        }
+
 
         if(channelType == 2){
-            await common.loopThrough('Getting scan source', `https://${global.enviroment}/v1/store-scans/${scanSource}/listings`, `size=100&includeUnmappedData=1`, `[parentId]=={${listing.scannedListingId}}`, (childListing)=>{
+            await common.loopThrough('', `https://${global.enviroment}/v1/store-scans/${scanSource}/listings`, `size=100&includeUnmappedData=1`, `[parentId]=={${listing.scannedListingId}}`, (childListing)=>{
+                if(childListing.linkedItemId === undefined){return}    
+
                 let childRefId = listingRef    
 
 
@@ -48,7 +49,7 @@ global.enviroment = 'api.stok.ly';
         }
     })
 
-    console.log(listingRefDict)
+
 
 
 
@@ -59,6 +60,7 @@ global.enviroment = 'api.stok.ly';
             "name": item.name
         }
     })
+
 
 
     await common.loopThrough('Updating new scan', `https://${global.enviroment}/v1/store-scans/${scanTo}/listings`, `size=100&includeUnmappedData=1`, `${channelType == 2 ? '[parentId]=={@null;}' : ''}`, async (listing)=>{
@@ -83,9 +85,8 @@ global.enviroment = 'api.stok.ly';
 
         }
 
-
         if(channelType == 2){
-            await common.loopThrough('Getting scan source', `https://${global.enviroment}/v1/store-scans/${scanSource}/listings`, `size=100&includeUnmappedData=1`, `[parentId]=={${listing.scannedListingId}}`, (childListing)=>{
+            await common.loopThrough('', `https://${global.enviroment}/v1/store-scans/${scanTo}/listings`, `size=100&includeUnmappedData=1`, `[parentId]=={${listing.scannedListingId}}`, async (childListing)=>{
                 let childRefId = listingRef    
 
 
@@ -93,7 +94,6 @@ global.enviroment = 'api.stok.ly';
                 for(const attributeVal of childListing.unmappedData.VariationSpecifics){
                     childRefId += `/${attributeVal.Value}`
                 }
-
 
                 if(listingRefDict[childRefId] != undefined){
 
@@ -115,8 +115,14 @@ global.enviroment = 'api.stok.ly';
 
             })
         }
+
+        if (payload.listings.length >= 200){
+            await common.requester('patch', `https://${global.enviroment}/v1/store-scans/${scanTo}`, payload)
+            payload.listings = []
+        }
+
     })
 
-    console.log(payload)
+    await common.requester('patch', `https://${global.enviroment}/v1/store-scans/${scanTo}`, payload)
 
 })()
