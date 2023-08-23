@@ -168,7 +168,7 @@ const authenticate = async ()=>{
         }
 
         try{
-            await requester('get', `https://${global.enviroment}/v0/items?size=1`)
+            let i = await requester('get', `https://${global.enviroment}/v0/items?size=1`, undefined, 0).then(r=>{return r.data.data})
             authenticated = true
         } catch {
             console.log(`${'|'.repeat(80)}\n\nAUTHENTICATION FAILED. TRYING AGAIN\n\n${'|'.repeat(80)}`)
