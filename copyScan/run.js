@@ -1,6 +1,7 @@
 let common = require('../common')
 
 global.enviroment = 'api.stok.ly';
+global.waitForGets = 1;
 
 (async ()=>{
     let scanSource = await common.askQuestion('Enter the ID of the scan we are copying from: ')
@@ -30,7 +31,7 @@ global.enviroment = 'api.stok.ly';
         }
 
 
-        if(channelType == 2){
+        if(channelType == 2 && listing.type == 'variable'){
             await common.loopThrough('', `https://${global.enviroment}/v1/store-scans/${scanSource}/listings`, `size=100&includeUnmappedData=1`, `[parentId]=={${listing.scannedListingId}}`, (childListing)=>{
                 if(childListing.linkedItemId === undefined){return}    
 
@@ -85,7 +86,7 @@ global.enviroment = 'api.stok.ly';
 
         }
 
-        if(channelType == 2){
+        if(channelType == 2 && listing.type == 'variable'){
             await common.loopThrough('', `https://${global.enviroment}/v1/store-scans/${scanTo}/listings`, `size=100&includeUnmappedData=1`, `[parentId]=={${listing.scannedListingId}}`, async (childListing)=>{
                 let childRefId = listingRef    
 
