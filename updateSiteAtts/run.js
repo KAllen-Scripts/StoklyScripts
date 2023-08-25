@@ -61,9 +61,19 @@ async function getParameters() {
     })
 }
 
-(async () => {
+(async ()=>{
+    let channelArr = []
 
-    let channelID = await common.askQuestion('Enter the channel ID: ')
+    do{
+        var channel = await common.askQuestion(`Enter a channel ID or type 'Continue' to proceed: `)
+        if (channel != 'Continue'){channelArr.push(channel)}
+    } while (channel.toLowerCase() != 'continue')
+
+    for (const channel of channelArr){await run(channel)}
+
+})()
+
+async function run (channelID) {
 
     // gets attributes to be over-ridden and to be ignored
     let csvDict = await getParameters()
@@ -160,4 +170,4 @@ async function getParameters() {
         }
     }
 
-})()
+}
