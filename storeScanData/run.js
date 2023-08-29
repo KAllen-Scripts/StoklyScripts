@@ -52,12 +52,12 @@ async function getSKUDict(){
                     return common.requester('get', `https://api.stok.ly/v0/channels/${r.data.data.channelId}`).then(r=>{return r.data.data.name})
                 })
                 var keepTogether = await common.askQuestion(`Are we keeping variants with the parents? This will take longer. 1 for yes, 0 for no: `)
+                objArr.push({
+                    scanId: scanId,
+                    channelName: channelName,
+                    keepTogether: keepTogether
+                })
             }
-            objArr.push({
-                scanId: scanId,
-                channelName: channelName,
-                keepTogether: keepTogether
-            })
         } while (scanId != '')
 
     }
