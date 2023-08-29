@@ -151,6 +151,9 @@ const askQuestion = (query) => {
     }));
 };
 
+const makeBold = (str) => {
+    return `\x1b[1m${str}\x1b[0m`
+}
 
 const authenticate = async ()=>{
     do{
@@ -186,5 +189,6 @@ module.exports = {
     getAccessToken,
     askQuestion,
     authenticate,
-    postImage
+    postImage,
+    makeBold
 };
