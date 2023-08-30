@@ -104,12 +104,13 @@ async function addAttributes(standardAtts, customAtts, remoteMappables){
 
     for(const attribute of customAtts){
         returnArr.push({
-            "localAttributeId": await localCommon.checkSingleAttribute(attribute.local, attribute.overRide || {}),
+            "localAttributeId": await checkSingleAttribute(attribute.local, attribute.overRide || {}),
             "remoteAttributeId": attribute.remote,
             "remoteMappableIds": remoteMappables,
             "priority": returnArr.length
         })
     }
+    return returnArr
 }
 
 module.exports = {
