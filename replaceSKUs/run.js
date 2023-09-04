@@ -11,7 +11,7 @@ global.enviroment = 'api.stok.ly';
     let done = 0
 
     let skuDict = {}
-    await common.loopThrough('Getting SKU References', `https://${global.enviroment}/v0/items`, `size=1000`, `filter=[status]!={1}`, (item)=>{
+    await common.loopThrough('Getting SKU References', `https://${global.enviroment}/v0/items`, `size=1000`, `[status]!={1}`, (item)=>{
         skuDict[item.sku.toLowerCase()] = {
             type:item.format,
             ID:item.itemId
