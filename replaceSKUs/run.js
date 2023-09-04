@@ -1,8 +1,8 @@
-const fs = require("fs")
-const fastCSV = require("fast-csv")
-const common = require('../common')
+const fs = require("fs");
+const fastCSV = require("fast-csv");
+const common = require('../common');
 
-global.enviroment = 'api.stok.ly'
+global.enviroment = 'api.stok.ly';
 
 (async()=>{
 
