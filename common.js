@@ -136,6 +136,10 @@ async function loopThrough(message, url, params = '', filter = '', callBack, inc
     } while (length > 0)
 }
 
+const makeBold = (str)=>{
+    return `\x1b[1m${str}\x1b[0m`
+}
+
 // Prompts input from user and returns response in form of promise
 const askQuestion = (query) => {
     const rl = readline.createInterface({
@@ -186,5 +190,6 @@ module.exports = {
     getAccessToken,
     askQuestion,
     authenticate,
-    postImage
+    postImage,
+    makeBold
 };
