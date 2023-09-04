@@ -77,7 +77,7 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
     }
 
     let returnVal = await axios(sendRequest).catch(async e=>{
-        if(e.response.data.message == 'jwt expired' || e.response.data.message == 'Invalid admin session'){
+        if(e?.response?.data?.message == 'jwt expired' || e?.response?.data?.message == 'Invalid admin session'){
             accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
             return requester(method, url, data)
         } else if (attempt) {
@@ -151,9 +151,6 @@ const askQuestion = (query) => {
     }));
 };
 
-const makeBold = (str) => {
-    return `\x1b[1m${str}\x1b[0m`
-}
 
 const authenticate = async ()=>{
     do{
@@ -189,6 +186,5 @@ module.exports = {
     getAccessToken,
     askQuestion,
     authenticate,
-    postImage,
-    makeBold
+    postImage
 };

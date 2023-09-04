@@ -12,6 +12,22 @@ const run = async (channel, scanID)=>{
 
     let remoteAttributes = await common.requester('get',`https://${global.enviroment}/v0/channels/${channel.channelId}/remote-mappables/marketplace/attributes`).then(r=>{return r.data.data})
 
+    let postObj = {
+        "remoteMappables": [
+            {
+                "mappableId": "marketplace",
+                "mappableName": "WooCommerce Products"
+            }
+        ],
+        "attributeGroups": [
+            {
+                "status": "active",
+                "attributes": [],
+                "index": 0
+            }
+        ]
+    }
+
     let attsToCreate = []
     for (const attribute of remoteAttributes){
         if (!isNaN(attribute.id)){
@@ -45,7 +61,7 @@ const run = async (channel, scanID)=>{
     for (const attribute in attributeRefs){
         postObj.attributeGroups[0].attributes.push({
             "localAttributeId": attributeRefs[attribute].localID,
-            "remoteAttributeId": attributeRefs[attribute].remoteIDs,
+            "remoteAttributeId": attributeRefs[attribute].remoteID,
             "remoteMappableIds": [
                 "marketplace"
             ],
