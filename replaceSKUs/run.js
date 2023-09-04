@@ -28,7 +28,7 @@ global.enviroment = 'api.stok.ly';
             console.log("No item with SKU " + row.currentSKU + " found")
             notValid.push(row.currentSKU)
         } else {
-            await common.requester('patch', `https://${global.enviroment}/v0/` + (skuDict[row.currentSKU.toLowerCase()].format == 2 ? 'variable-items/' : 'items/') + skuDict[row.currentSKU.toLowerCase()].ID, {
+            await common.requester('patch', `https://${global.enviroment}/v0/` + (skuDict[row.currentSKU.toLowerCase()].type == 2 ? 'variable-items/' : 'items/') + skuDict[row.currentSKU.toLowerCase()].ID, {
                 sku:row.newSKU,
                 aquisition:skuDict[row.currentSKU.toLowerCase()].format
             })
