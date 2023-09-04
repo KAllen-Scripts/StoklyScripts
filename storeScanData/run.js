@@ -32,7 +32,7 @@ async function getSKUDict(){
         await common.loopThrough('Getting Channels', `https://${global.enviroment}/v0/channels`, 'size=1000', '[status]!={2}', async(channel)=>{
             
             let scanId = await common.requester('get',`https://api.stok.ly/v1/store-scans?sortDirection=DESC&sortField=createdAt&filter=[channelId]=={${channel.channelId}}`).then(async r=>{
-                return r.data.data[0].storeScanId || undefined
+                return r?.data?.data[0]?.storeScanId || undefined
             })
 
             if(!scanId){return}
