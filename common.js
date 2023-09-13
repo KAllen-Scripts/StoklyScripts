@@ -12,7 +12,6 @@ var accessToken = {}
 var sleepTime = global.sleepTimeOverride  || 200
 var authMethod
 
-
 var logWrite = fs.createWriteStream('./log.txt', {flags: 'a'});
 
 let dateOptions = {
