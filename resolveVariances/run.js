@@ -41,13 +41,15 @@ async function getInput(){
 
     await common.loopThrough('Resolving Variances', `https://${global.enviroment}/v0/variances`, 'size=1000&sortDirection=DESC&sortField=niceId', '', async (variance)=>{
         if(!skipArr.includes(String(variance.niceId)) || variance.status == 1){return}
-        await common.requester('post', `https://${global.enviroment}/v0/variances/${variance.varianceId}/resolutions`, {
-            dismissals:moveToOnHand ? 0 : variance.actual - variance.expected,
-            blemishedCreations:0,
-            reason:"",
-            onHandAdjustment: ((variance.expected > variance.actual) || !moveToOnHand) ? 0 : variance.actual - variance.expected
-        }
-    )
+        try{
+            await common.requester('post', `https://${global.enviroment}/v0/variances/${variance.varianceId}/resolutions`, {
+                dismissals:moveToOnHand ? 0 : variance.actual - variance.expected,
+                blemishedCreations:0,
+                reason:"",
+                onHandAdjustment: ((variance.expected > variance.actual) || !moveToOnHand) ? 0 : variance.actual - variance.expected
+            }
+        )
+        } catch {}
     })
 
 })()
