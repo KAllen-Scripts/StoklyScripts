@@ -40,7 +40,7 @@ async function getInput(){
     let moveToOnHand = await common.askQuestion('Resolve variance to on hand stock? 1 = Yes, 0 = No: ').then(r=>{return parseInt(r)})
 
     await common.loopThrough('Resolving Variances', `https://${global.enviroment}/v0/variances`, 'size=1000&sortDirection=DESC&sortField=niceId', '', async (variance)=>{
-        if(!skipArr.includes(String(variance.niceId)) || variance.status == 1){return}
+        if(skipArr.includes(String(variance.niceId)) || variance.status == 1){return}
         try{
             await common.requester('post', `https://${global.enviroment}/v0/variances/${variance.varianceId}/resolutions`, {
                 dismissals:moveToOnHand ? 0 : variance.actual - variance.expected,
