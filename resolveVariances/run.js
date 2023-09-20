@@ -6,7 +6,7 @@ global.enviroment = 'api.stok.ly';
 
 
 async function getInput(){
-    let rowComplete = false
+    let rowComplete = true
     return new Promise((res,rej)=>{
         let returnArr = []
         const stream = fs.createReadStream('./include.csv')
@@ -25,8 +25,9 @@ async function getInput(){
         })
         .on('end', async () => {
             do{
+                console.log(rowComplete)
                 await common.sleep(200)
-            } while (!rowComplete)
+            } while (rowComplete == false)
             res(returnArr)
         })
     })
@@ -39,9 +40,9 @@ async function getInput(){
     let moveToOnHand = await common.askQuestion('Resolve variance to on hand stock? 1 = Yes, 0 = No: ').then(r=>{return parseInt(r)})
 
     await common.loopThrough('Resolving Variances', `https://${global.enviroment}/v0/variances`, 'size=1000&sortDirection=DESC&sortField=niceId', '', async (variance)=>{
-        if(!skipArr.includes(String(variance.niceId))){return}
-        await common.requester('post', `https://${global.enviroment}/v0/variances/${variance.varianceId}resolutions`, {
-            dismissals:0,
+        if(!skipArr.includes(String(variance.niceId)) || variance.status == 1){return}
+        await common.requester('post', `https://${global.enviroment}/v0/variances/${variance.varianceId}/resolutions`, {
+            dismissals:moveToOnHand ? 0 : variance.actual - variance.expected,
             blemishedCreations:0,
             reason:"",
             onHandAdjustment: ((variance.expected > variance.actual) || !moveToOnHand) ? 0 : variance.actual - variance.expected
