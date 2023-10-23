@@ -3,7 +3,7 @@ const convertCSV = require("json-2-csv");
 const fs = require('fs');
 
 global.enviroment = 'api.stok.ly';
-global.waitForGets = 1
+global.waitForGets = 1;
 
 (async ()=>{
 
