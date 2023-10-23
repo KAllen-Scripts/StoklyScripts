@@ -39,7 +39,7 @@ global.waitForGets = 1;
         
         csvArr.push(listingData)
 
-        if(getErrors){
+        if(getErrors && (!listing.inventorySynchronised || !listing.dataSynchronised)){
             await common.loopThrough('', `https://${global.enviroment}/v0/listings/${listing.listingId}/messages`, 'size=1000&sortDirection=DESC&sortField=niceId', '', (err)=>{
                 if(err.type == 2){
                     errWrite.write(`"${listing.sku}",`)
