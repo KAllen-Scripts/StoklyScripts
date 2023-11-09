@@ -1,16 +1,16 @@
 // modules
 const axios = require('axios');
-const crypto = require('crypto');
 const readline = require("readline");
 const fs = require('fs');
 const FormData = require('form-data');
 
 var accountID
-var secret
-var clientId
+var username
+var password
 var accessToken = {}
 var sleepTime = global.sleepTimeOverride  || 200
 var authMethod
+var adminToken = {}
 
 var logWrite = fs.createWriteStream('./log.txt', {flags: 'a'});
 
@@ -27,22 +27,36 @@ const sleep = (ms) => {
 // gets the access token using stored global variables
 const getAccessToken = async () => {
 
-    const signature = crypto.createHmac("sha256", secret).update(clientId).digest("hex")
-
-    accessToken = await axios({
+    adminToken = await axios({
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        url: `https://${global.enviroment}/v1/grant`,
+        url: `https://${global.enviroment}/v1/signin`,
         data: {
-            accountkey: accountID,
-            clientId: clientId,
-            signature: signature
+            "accountkey": "$admin",
+            "email": username,
+            "password": password
         }
     }).then(r => {
         return r.data.data.authenticationResult
     })
+
+
+    accessToken = await axios({
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminToken.accessToken}`
+        },
+        url: `https://${global.enviroment}/v1/admin/sessions`,
+        data: {
+            accountkeyAlias: accountID
+        }
+    }).then(r => {
+        return r.data.data
+    })
+
 }
 
 async function postImage(imgURL, accountKey){
@@ -59,7 +73,7 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
 
     if(!accessToken.accessToken){await authenticate()}
 
-    if (new Date(Date.now()+60000) > (new Date((accessToken?.expiry) || 0)) && authMethod) {
+    if ((new Date(Date.now()+60000) > (new Date((accessToken?.expiry) || 0)) || new Date(Date.now()+60000) > (new Date((adminToken?.expiry) || 0))) && authMethod) {
         await getAccessToken()
     }
 
@@ -94,7 +108,7 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
             return requester(method, url, data, tryAgain)
         } else {
             console.log(e)
-            return e;
+            return new Error(e);
         }
     })
 
@@ -160,18 +174,18 @@ const authenticate = async ()=>{
     do{
         var authenticated = false
 
-        authMethod = await askQuestion('How are we authenticating? 0 for token, 1 for app: ').then(r=>{return JSON.parse(r)})
-
-        if(authMethod){
-            accountID = await askQuestion('Enter the account ID: ')
-            secret = await askQuestion('Enter the secret: ')
-            clientId = await askQuestion('Enter the client ID: ')
-            await getAccessToken()
-        } else {
-            accessToken.accessToken = await askQuestion('Enter the access token: ')
-        }
-
         try{
+            authMethod = await askQuestion('How are we authenticating? 0 for token, 1 for admin session: ').then(r=>{return JSON.parse(r)})
+
+            if(authMethod){
+                accountID = await askQuestion('Enter the account ID: ')
+                username = await askQuestion('Enter your username: ')
+                password = await askQuestion('Enter your password: ')
+                await getAccessToken()
+            } else {
+                accessToken.accessToken = await askQuestion('Enter the access token: ')
+            }
+
             let i = await requester('get', `https://${global.enviroment}/v0/items?size=1`, undefined, 0).then(r=>{return r.data.data})
             authenticated = true
         } catch {
