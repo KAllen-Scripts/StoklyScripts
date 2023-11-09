@@ -41,7 +41,7 @@ const getAdminToken = async () => {
         return r.data.data.authenticationResult
     })
 
-    await getClientToken()
+    // await getClientToken()
 }
 
 async function getClientToken(){
@@ -187,6 +187,7 @@ const authenticate = async ()=>{
                 username = await askQuestion('Enter your username: ')
                 password = await askQuestion('Enter your password: ')
                 await getAdminToken()
+                await getClientToken()
             } else {
                 accessToken.accessToken = await askQuestion('Enter the access token: ')
             }
