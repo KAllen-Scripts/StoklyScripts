@@ -25,8 +25,7 @@ const sleep = (ms) => {
 }
 
 // gets the access token using stored global variables
-const getAccessToken = async () => {
-
+const getAdminToken = async () => {
     adminToken = await axios({
         method: 'post',
         headers: {
@@ -42,7 +41,10 @@ const getAccessToken = async () => {
         return r.data.data.authenticationResult
     })
 
+    await getClientToken()
+}
 
+async function getClientToken(){
     accessToken = await axios({
         method: 'post',
         headers: {
@@ -56,7 +58,6 @@ const getAccessToken = async () => {
     }).then(r => {
         return r.data.data
     })
-
 }
 
 async function postImage(imgURL, accountKey){
@@ -73,8 +74,12 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
 
     if(!accessToken.accessToken){await authenticate()}
 
-    if ((new Date(Date.now()+60000) > (new Date((accessToken?.expiry) || 0)) || new Date(Date.now()+60000) > (new Date((adminToken?.expiry) || 0))) && authMethod) {
-        await getAccessToken()
+    if (new Date(Date.now()+60000) > (new Date((adminToken?.expiry) || 0)) && authMethod) {
+        await getAdminToken()
+    }
+
+    if (new Date(Date.now()+60000) > (new Date((accessToken?.expiry) || 0)) && authMethod) {
+        await getClientToken()
     }
 
     let headers = additionalHeaders || {'Content-Type': 'application/json'}
@@ -181,7 +186,7 @@ const authenticate = async ()=>{
                 accountID = await askQuestion('Enter the account ID: ')
                 username = await askQuestion('Enter your username: ')
                 password = await askQuestion('Enter your password: ')
-                await getAccessToken()
+                await getAdminToken()
             } else {
                 accessToken.accessToken = await askQuestion('Enter the access token: ')
             }
@@ -201,7 +206,7 @@ module.exports = {
     requester,
     sleep,
     loopThrough,
-    getAccessToken,
+    getAdminToken,
     askQuestion,
     authenticate,
     postImage,
