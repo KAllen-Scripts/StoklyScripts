@@ -41,7 +41,7 @@ const getAdminToken = async () => {
         return r.data.data.authenticationResult
     })
 
-    // await getClientToken()
+    await getClientToken()
 }
 
 async function getClientToken(){
@@ -74,14 +74,6 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
 
     if(!accessToken.accessToken){await authenticate()}
 
-    if (new Date(Date.now()+60000) > (new Date((adminToken?.expiry) || 0)) && authMethod) {
-        await getAdminToken()
-    }
-
-    if (new Date(Date.now()+60000) > (new Date((accessToken?.expiry) || 0)) && authMethod) {
-        await getClientToken()
-    }
-
     let headers = additionalHeaders || {'Content-Type': 'application/json'}
     headers.Authorization = 'Bearer ' + accessToken.accessToken
 
@@ -97,7 +89,11 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
 
     let returnVal = await axios(sendRequest).catch(async e=>{
         if(e?.response?.data?.message == 'jwt expired' || e?.response?.data?.message == 'Invalid admin session'){
-            accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
+            if(authMethod){
+                await getAdminToken()
+            }else{
+                accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
+            }
             return requester(method, url, data)
         } else if (attempt) {
             let tryAgain
@@ -187,7 +183,6 @@ const authenticate = async ()=>{
                 username = await askQuestion('Enter your username: ')
                 password = await askQuestion('Enter your password: ')
                 await getAdminToken()
-                await getClientToken()
             } else {
                 accessToken.accessToken = await askQuestion('Enter the access token: ')
             }
