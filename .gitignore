@@ -4,3 +4,4 @@ node_modules
 localOnly
 */inputFolder/*
 */outputFolder/*
+package-lock.json
