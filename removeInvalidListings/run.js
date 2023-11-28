@@ -1,6 +1,4 @@
-const fs = require('fs');
 const common = require('../common.js');
-const csv = require('fast-csv');
 
 global.enviroment = 'api.stok.ly';
 
