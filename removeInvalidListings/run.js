@@ -14,8 +14,13 @@ async function getRefs(scan){
 
 (async ()=>{
     let scan = await common.askQuestion('Enter the scan ID: ')
-    let channel = await common.requester('Get', `https://api.stok.ly/v1/store-scans/257a85fa-ea37-46dd-883d-8222f1583b8c`).then(r=>{return r.data.data.channelId})
+    let scanDetails = await common.requester('Get', `https://api.stok.ly/v1/store-scans/${scan}`).then(r=>{return r.data.data})
+    let channel = scanDetails.channelId
     let listingList = await getRefs(scan)
+
+    if(scanDetails.expired){
+        throw new Error(`Scan is expired. Choose a different one`)
+    }
 
     await common.loopThrough('Deleting Old Listings', `https://api.stok.ly/v0/channels/${channel}/listings`, 'size=1000', `[status]!={2}`, async (item)=>{
         if(listingList.includes(item.referenceId)){return}
