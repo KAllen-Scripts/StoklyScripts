@@ -47,8 +47,7 @@ async function getInput(){
                 blemishedCreations:0,
                 reason:"",
                 onHandAdjustment: ((variance.expected > variance.actual) || !moveToOnHand) ? 0 : variance.actual - variance.expected
-            }
-        )
+            })
         } catch {}
     })
 
