@@ -10,7 +10,7 @@ global.enviroment = 'api.stok.ly';
         attributesList.push(attribute.itemAttributeId)
     })
 
-    await common.loopThrough('Cleaning Items', `https://${global.enviroment}/v0/items`, 'size=1000', `([status]!={1})%26%26[sku]=={SKU000434}`, async (item)=>{
+    await common.loopThrough('Cleaning Items', `https://${global.enviroment}/v0/items`, 'size=1000', `([status]!={1})`, async (item)=>{
         let request = {attributes:[]}
         let attributes = await common.requester('get', `https://${global.enviroment}/v0/items/${item.itemId}/attributes?size=1000&filter=[status]=={active}`).then(r=>{return r.data.data})
         for(const att of attributes){
