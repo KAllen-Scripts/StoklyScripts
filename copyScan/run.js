@@ -66,9 +66,11 @@ global.waitForGets = 1;
 
     await common.loopThrough('Updating new scan', `https://${global.enviroment}/v1/store-scans/${scanTo}/listings`, `size=100&includeUnmappedData=1`, `${channelType == 2 ? '[parentId]=={@null;}' : ''}`, async (listing)=>{
 
+        if (listing.importOptions.action == 'disabled_already_linked'){return}
+
         let listingRef = (listing.unmappedData.id || listing.unmappedData['listing-id'] || listing.unmappedData.ItemID)
         
-        if(listingRefDict[listingRef] != undefined){
+        if(itemRefDict[listingRefDict[listingRef]] != undefined){
 
             payload.listings.push({
                 "scannedListingId": listing.scannedListingId,

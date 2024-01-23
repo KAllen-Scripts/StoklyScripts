@@ -71,17 +71,17 @@ async function getImages(source, accountKey, nameDelim) {
         let fileStat = await fs.promises.stat(`./${source}/${file}`);
         let tooLarge = false
         if (fileStat.isDirectory()) {
-            await getImages(`./${source}/${file}`);
+            await getImages(`./${source}/${file}`, accountKey, nameDelim);
         } else {
 
             let itemName = (((path.parse(file).name).split(nameDelim)[0].trim()).toLowerCase())
 
-            if(itemDict[itemName] == undefined){return}
+            if(itemDict[itemName] == undefined){continue}
 
             if((fileStat.size * 0.000001) > 2){
                 let result = await compressImgs(`./${source}/${file}`, `./${source}/compressed - `);
                 filePath = result.path_out_new
-                fileStat = await fs.promises.stat(`./${source}/compressed - `);
+                fileStat = await fs.promises.stat(`./${source}/compressed - ${file}`);
                 if((fileStat.size * 0.000001) > 2){
                     tooLarge = true
                 }

@@ -22,8 +22,15 @@ async function getRefs(scan){
         throw new Error(`Scan is expired. Choose a different one`)
     }
 
-    await common.loopThrough('Deleting Old Listings', `https://api.stok.ly/v0/channels/${channel}/listings`, 'size=1000', `[status]!={2}`, async (item)=>{
+    let deleteList = []
+    await common.loopThrough('Checking Listings', `https://api.stok.ly/v0/channels/${channel}/listings`, 'size=1000', `[status]!={2}`, async (item)=>{
         if(listingList.includes(item.referenceId)){return}
-        await common.requester('delete', `https://api.stok.ly/v0/listings/${item.listingId}`)
+        deleteList.push(item.listingId)
     })
+
+    for (const listing of deleteList){
+        console.log(`Deleting Listing ${deleteList.indexOf(listing)+1}/${deleteList.length}`)
+        await common.requester('delete', `https://api.stok.ly/v0/listings/${listing}`)
+    }
+
 })()
