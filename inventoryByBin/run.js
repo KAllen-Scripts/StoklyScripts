@@ -28,7 +28,7 @@ function createSheet(workbook, sheetName, data) {
     })
 
     for (const location in locations){
-        createSheet(workbook, location, locations[location])
+        createSheet(workbook, location.replace(/[*?:\/[\]]/g, ''), locations[location])
     }
 
     workbook.xlsx.writeFile('./inventory.xlsx')
