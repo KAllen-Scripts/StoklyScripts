@@ -1,4 +1,3 @@
-const fs = require('fs');
 const common = require('../common.js');
 const ExcelJS = require('exceljs');
 
