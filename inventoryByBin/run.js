@@ -56,11 +56,5 @@ function convertToArrays(data){
         rowArr.push(row)
     }
 
-    for (const row in rowArr){
-        for (const header in headerArr){
-            if (rowArr[row][header] == undefined){rowArr[row][header] = 0}
-        }
-    }
-
     return [headerArr, ...rowArr]
 }
