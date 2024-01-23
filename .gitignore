@@ -1,4 +1,5 @@
 *.csv
+*.xlsx
 *.txt
 node_modules
 localOnly

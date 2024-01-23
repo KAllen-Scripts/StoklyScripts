@@ -2,6 +2,7 @@
   "dependencies": {
     "axios": "^1.6.2",
     "compress-images": "^2.0.5",
+    "exceljs": "^4.4.0",
     "fast-csv": "^4.3.6",
     "form-data": "^4.0.0",
     "gifsicle": "^7.0.1",
