@@ -49,8 +49,10 @@ function convertToArrays(data){
     for(const item in data){
         let row = [item, data[item].name, data[item].itemId]
         for (const bin in data[item].bins){
-            if(!headerArr.includes(bin)){headerArr.push(bin)}
-            row[headerArr.indexOf(bin)] = data[item].bins[bin]
+            if(data[item].bins[bin] != 0){
+                if(!headerArr.includes(bin)){headerArr.push(bin)}
+                row[headerArr.indexOf(bin)] = data[item].bins[bin]
+            }
         }
 
         rowArr.push(row)
