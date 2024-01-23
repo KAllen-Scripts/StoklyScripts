@@ -4,10 +4,10 @@ const ExcelJS = require('exceljs');
 
 global.enviroment = 'api.stok.ly';
 
-async function createSheet(workbook, sheetName, data) {
+function createSheet(workbook, sheetName, data) {
     const worksheet = workbook.addWorksheet(sheetName);
 
-    let rows = await convertToArrays(data);
+    let rows = convertToArrays(data);
 
     worksheet.addRows(rows);
 }
@@ -29,7 +29,7 @@ async function createSheet(workbook, sheetName, data) {
     })
 
     for (const location in locations){
-        await createSheet(workbook, location, locations[location])
+        createSheet(workbook, location, locations[location])
     }
 
     workbook.xlsx.writeFile('./inventory.xlsx')
@@ -43,7 +43,7 @@ async function createSheet(workbook, sheetName, data) {
 })()
 
 
-async function convertToArrays(data){
+function convertToArrays(data){
     let headerArr = ['SKU', 'Name', 'itemId']
     let rowArr = []
 
