@@ -11,8 +11,8 @@ var accessToken = {}
 var authMethod
 var adminToken = {}
 
-const tokensOverMinute = 230
-const maxTokensToHold = 9
+const tokensOverMinute = 240
+const maxTokensToHold = 3
 const refreshTokenAmount = 3
 let tokens = 0
 
