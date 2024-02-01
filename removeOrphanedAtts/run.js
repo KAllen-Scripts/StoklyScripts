@@ -11,6 +11,7 @@ global.enviroment = 'api.stok.ly';
     })
 
     await common.loopThrough('Cleaning Items', `https://${global.enviroment}/v0/items`, 'size=1000', `([status]!={1})`, async (item)=>{
+        let updateFlag = false
         let request = {attributes:[]}
         let attributes = await common.requester('get', `https://${global.enviroment}/v0/items/${item.itemId}/attributes?size=1000&filter=[status]=={active}`).then(r=>{return r.data.data})
         for(const att of attributes){
@@ -19,8 +20,14 @@ global.enviroment = 'api.stok.ly';
                     itemAttributeId: att.itemAttributeId,
                     value: att.value
                 })
+            } else {
+                updateFlag = true
             }
         }
-        await common.requester('patch', `https://${global.enviroment}/v0/${item.format == 2 ? 'variable-items' : 'items'}/${item.itemId}`, request)
+        if(updateFlag){
+            await common.requester('patch', `https://${global.enviroment}/v0/${item.format == 2 ? 'variable-items' : 'items'}/${item.itemId}`, request, 3, undefined, false)
+        }
     })
+
+    global.continueReplen = false
 })()
