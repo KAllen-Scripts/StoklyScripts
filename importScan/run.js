@@ -63,5 +63,5 @@ async function getInput(skuDict){
     })
     await common.requester('patch', `https://${global.enviroment}/v1/store-scans/${scanId}`, payload)
 
-
+    global.continueReplen = false
 })()

@@ -32,5 +32,5 @@ async function getRefs(scan){
         console.log(`Deleting Listing ${deleteList.indexOf(listing)+1}/${deleteList.length}`)
         await common.requester('delete', `https://api.stok.ly/v0/listings/${listing}`)
     }
-
+    global.continueReplen = false
 })()

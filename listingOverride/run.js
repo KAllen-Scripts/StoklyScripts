@@ -6,7 +6,6 @@ const csv = require('fast-csv');
 
 //Global varsiable used for debugging
 global.enviroment = 'api.stok.ly';
-global.waitForGets = 1;
 
 //Get the values from the CSV and return as promise which resolves to object
 //Each header is an object property
@@ -127,5 +126,5 @@ async function generateCSV(channelID){
         //Finally update the listing
         await common.requester('patch', `https://${global.enviroment}/v0/listings/${listing.listingId}`, {data:patchData})
     })
-
+    global.continueReplen = false
 })()

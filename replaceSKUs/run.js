@@ -45,4 +45,5 @@ global.enviroment = 'api.stok.ly';
     .on('end', r => {for(const i of notValid){
         console.log(i + " did not update")
     }})
+    global.continueReplen = false
 })()

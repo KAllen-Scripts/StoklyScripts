@@ -50,5 +50,5 @@ async function getInput(){
             })
         } catch {}
     })
-
+    global.continueReplen = false
 })()

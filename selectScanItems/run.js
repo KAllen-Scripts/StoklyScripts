@@ -31,4 +31,5 @@ global.enviroment = 'api.stok.ly';
         }
     })
     await common.requester('patch', `https://api.stok.ly/v1/store-scans/${scanID}`, postObj)
+    global.continueReplen = false
 })()

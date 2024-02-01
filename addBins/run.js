@@ -41,5 +41,5 @@ async function getInput(){
     let payload = await getInput()
 
     await common.requester('patch', `https://${global.enviroment}/v0/locations/${locationID}`, payload)
-
+    global.continueReplen = false
 })()   

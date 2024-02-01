@@ -8,9 +8,13 @@ var accountID
 var username
 var password
 var accessToken = {}
-var sleepTime = global.sleepTimeOverride  || 200
 var authMethod
 var adminToken = {}
+
+const tokensOverMinute = 230
+const maxTokensToHold = 9
+const refreshTokenAmount = 3
+let tokens = 0
 
 var logWrite = fs.createWriteStream('./log.txt', {flags: 'a'});
 
@@ -18,6 +22,15 @@ let dateOptions = {
     weekday: "long", year: "numeric", month: "short",  
     day: "numeric", hour: "2-digit", minute: "2-digit"  
 }; 
+
+//refil the token bucket every calculated interval, up to set maximum
+async function replenTokens(){
+    do{
+        if((tokens + refreshTokenAmount) <= maxTokensToHold){tokens += refreshTokenAmount}
+        await (sleep(60000/(tokensOverMinute/refreshTokenAmount)))
+    } while (global.continueReplen)
+}
+
 
 // generic wait for timeout function to handle a delay
 const sleep = (ms) => {
@@ -70,7 +83,7 @@ async function postImage(imgURL, accountKey){
 }
 
 // All purpose requester function. Pass in a method, url, and data object. Waits for sleep function to resolve then returns a response from axios
-const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
+const requester = async (method, url, data, attempt = 2, additionalHeaders, reAttempt = true) => {
 
     if(!accessToken.accessToken){await authenticate()}
 
@@ -83,8 +96,10 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
         url: url,
         data: data
     }
-    if (!(method == 'get') || global.waitForGets) {
-        await sleep(sleepTime)
+
+    tokens -= 1
+    while (tokens <= 0){
+        await sleep(100)
     }
 
     let returnVal = await axios(sendRequest).catch(async e=>{
@@ -95,7 +110,7 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders) => {
                 accessToken.accessToken = await askQuestion('Access token expired. Please enter a new one: ')
             }
             return requester(method, url, data)
-        } else if (attempt) {
+        } else if (attempt && reAttempt) {
             let tryAgain
             console.log(e)
             if(attempt >= 2){
@@ -172,6 +187,8 @@ const askQuestion = (query) => {
 
 
 const authenticate = async ()=>{
+    global.continueReplen = true
+    replenTokens()
     do{
         var authenticated = false
 
@@ -194,6 +211,7 @@ const authenticate = async ()=>{
         }
     } while (!authenticated)
 
+    
     console.log(`${'|'.repeat(80)}\n\nAUTHENTICATED\n\n${'|'.repeat(80)}`)
 }
 

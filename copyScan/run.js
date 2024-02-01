@@ -1,7 +1,6 @@
 let common = require('../common')
 
 global.enviroment = 'api.stok.ly';
-global.waitForGets = 1;
 
 (async ()=>{
     let scanSource = await common.askQuestion('Enter the ID of the scan we are copying from: ')
@@ -127,5 +126,5 @@ global.waitForGets = 1;
     })
 
     await common.requester('patch', `https://${global.enviroment}/v1/store-scans/${scanTo}`, payload)
-
+    global.continueReplen = false
 })()

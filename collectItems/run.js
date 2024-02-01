@@ -80,5 +80,5 @@ async function getInput(){
         })
         .catch(err=>{console.log(err)})
     }
-
+    global.continueReplen = false
 })()

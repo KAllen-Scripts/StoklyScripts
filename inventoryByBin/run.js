@@ -38,7 +38,7 @@ function createSheet(workbook, sheetName, data) {
         .catch((error) => {
             console.error('Error creating workbook:', error);
         });
-
+        global.continueReplen = false
 })()
 
 

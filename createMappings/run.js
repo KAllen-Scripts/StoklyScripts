@@ -66,5 +66,5 @@ global.enviroment = 'api.stok.ly';
     }
 
 
-
+    global.continueReplen = false
 })()

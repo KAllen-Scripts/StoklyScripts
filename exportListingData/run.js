@@ -3,7 +3,6 @@ const convertCSV = require("json-2-csv");
 const fs = require('fs');
 
 global.enviroment = 'api.stok.ly';
-global.waitForGets = 1;
 
 (async ()=>{
 
@@ -55,4 +54,5 @@ global.waitForGets = 1;
     //Library to generate CSV string. WHich then gets written
     let csvStr = await convertCSV.json2csv(csvArr);
     fs.writeFileSync('./output.csv', csvStr);
+    global.continueReplen = false
 })()

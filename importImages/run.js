@@ -158,5 +158,5 @@ async function getImages(source, accountKey, nameDelim) {
     for(const img of tooLargeArr){
         console.log(img)
     }
-
+    global.continueReplen = false
 })()

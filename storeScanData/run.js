@@ -3,7 +3,6 @@ const fs = require('fs');
 const common = require('../common.js')
 
 global.enviroment = 'api.stok.ly';
-global.waitForGets = 1;
 
 
 async function getSKUDict(){
@@ -109,5 +108,5 @@ async function run (scanID, fileName, keepTogether, skuDict){
         objArr.push(item)
     
     }
-
+    global.continueReplen = false
 }

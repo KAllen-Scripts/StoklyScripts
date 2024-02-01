@@ -31,4 +31,5 @@ async function getInput(){
             await common.requester('patch', `https://${global.enviroment}/v0/${item.format == 2 ? 'variable-items' : 'items'}/${item.itemId}`, {images:[]})
         }
     })
+    global.continueReplen = false
 })()

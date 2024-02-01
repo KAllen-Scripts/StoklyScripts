@@ -169,5 +169,5 @@ async function run (channelID) {
             console.log(log)
         }
     }
-
+    global.continueReplen = false
 }

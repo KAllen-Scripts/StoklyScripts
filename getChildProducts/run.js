@@ -35,5 +35,5 @@ global.enviroment = 'api.stok.ly';
         }
         myWrite.write('\r\n')
     })
-
+    global.continueReplen = false
 })()

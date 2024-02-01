@@ -18,4 +18,5 @@ global.enviroment = 'api.stok.ly';
         }
         if(order.niceId == endOrderId){return false};
     })
+    global.continueReplen = false
 })()
