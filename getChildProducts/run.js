@@ -48,8 +48,9 @@ global.enviroment = 'api.stok.ly';
                 })
             }
         }
+        objArr.push({})
     })
-    let i = await convertCSV.json2csv(objArr)
+    let i = await convertCSV.json2csv(objArr, {defaultValue: ''})
     fs.writeFileSync(`./${fileName}.csv`, i)
 
     global.continueReplen = false
