@@ -8,7 +8,7 @@ global.enviroment = 'api.stok.ly';
 
     let type = await common.askQuestion('What are we getting? Composites = 1, Variables = 2, Both = 3: ')
 
-    let fileName = `./${(()=>{if (type > 2){return "Both"} else {return type == 1 ? "Composites" : "Variables"}})()}.csv`
+    let fileName = `./${(()=>{if (type > 2){return "Both"} else {return type == 1 ? "Composites" : "Variables"}})()}`
 
     let objArr = []
 
