@@ -1,4 +1,5 @@
-let fs = require('fs');
+const convertCSV = require("json-2-csv");
+const fs = require('fs');
 let common = require('../common')
 
 global.enviroment = 'api.stok.ly';
@@ -9,42 +10,47 @@ global.enviroment = 'api.stok.ly';
 
     let fileName = `./${(()=>{if (type > 2){return "Both"} else {return type == 1 ? "Composites" : "Variables"}})()}.csv`
 
-    let myWrite = fs.createWriteStream(fileName, {flags:'a'})
-    fs.writeFileSync(fileName,'"parent SKU","parent name","Variable Attributes","Format","child sku","child Name","Composing Quantity"\r\n')
+    let objArr = []
 
     await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, 'size=1000', `([status]!={1})%26%26${type > 2 ? '(([format]!={0}))' : '(([format]=={' + type + '}))'}`, async (item)=>{
         if(item.format == type || type > 2){
-
+    
+            let children = await common.requester('get', `https://${global.enviroment}/v0/items/${item.itemId}/children`).then(r=>{return r.data.data})
+            
             let variableAttributes = await (async ()=>{
                 if(item.format == 2){
-                    let i = await common.requester('get', `https://api.stok.ly/v0/items/${item.itemId}/variable-attributes`).then(r=>{return r.data.data.map(item => item.name)})
+                    let i = await common.requester('get', `https://api.stok.ly/v0/items/${item.itemId}/variable-attributes`).then(r=>{return r.data.data.map(item => item.name).join()})
                     return i
                 } else {
                     return ''
                 }
             })()
-    
-            let children = await common.requester('get', `https://${global.enviroment}/v0/items/${item.itemId}/children`).then(r=>{return r.data.data})
+
+
             if (children.length == 0){
-                myWrite.write(`"${item.sku}",`)
-                myWrite.write(`"${item.name}",`)
-                myWrite.write(`"${variableAttributes.join()}",`)
-                myWrite.write(`"${item.format == 1 ? 'Composite' : 'Variable'}",`)
-                myWrite.write('\r\n')
+                objArr.push({
+                    'Parent SKU': item.sku,
+                    'Parent Name': item.name,
+                    'Variable Attributes': variableAttributes,
+                    Format: `"${item.format == 1 ? 'Composite' : 'Variable'}"`
+                })
             }
 
             for (const child of children){
-                myWrite.write(`"${item.sku}",`)
-                myWrite.write(`"${item.name}",`)
-                myWrite.write(`"${variableAttributes.join()}",`)
-                myWrite.write(`"${item.format == 1 ? 'Composite' : 'Variable'}",`)
-                myWrite.write(`"${child.sku}",`)
-                myWrite.write(`"${child.name}",`)
-                myWrite.write(`"${child.composingItemQuantity || ''}",`)
-                myWrite.write('\r\n')
+                objArr.push({
+                    'Parent SKU': item.sku,
+                    'Parent Name': item.name,
+                    'Variable Attributes': variableAttributes,
+                    Format: `"${item.format == 1 ? 'Composite' : 'Variable'}"`,
+                    'Child SKU': child.sku,
+                    'Child Name': child.name,
+                    'Composing Quantity': `"${child.composingItemQuantity || ''}"`
+                })
             }
         }
-        myWrite.write('\r\n')
     })
+    let i = await convertCSV.json2csv(objArr)
+    fs.writeFileSync(`./${fileName}.csv`, i)
+
     global.continueReplen = false
 })()

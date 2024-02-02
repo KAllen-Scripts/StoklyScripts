@@ -67,7 +67,7 @@ async function getSKUDict(){
     for (const scan of objArr){
         await run(scan.scanId, scan.channelName, scan.keepTogether, skuDict)
     }
-
+    global.continueReplen = false
 })()
 
 async function run (scanID, fileName, keepTogether, skuDict){
@@ -108,5 +108,4 @@ async function run (scanID, fileName, keepTogether, skuDict){
         objArr.push(item)
     
     }
-    global.continueReplen = false
 }
