@@ -50,7 +50,7 @@ global.enviroment = 'api.stok.ly';
         }
         objArr.push({})
     })
-    let i = await convertCSV.json2csv(objArr, {defaultValue: ''})
+    let i = await convertCSV.json2csv(objArr, {emptyFieldValue: ''})
     fs.writeFileSync(`./${fileName}.csv`, i)
 
     global.continueReplen = false
