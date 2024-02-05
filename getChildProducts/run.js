@@ -32,7 +32,7 @@ global.enviroment = 'api.stok.ly';
                     'Parent SKU': item.sku,
                     'Parent Name': item.name,
                     'Variable Attributes': variableAttributes,
-                    Format: `"${item.format == 1 ? 'Composite' : 'Variable'}"`
+                    Format: item.format == 1 ? 'Composite' : 'Variable'
                 })
             }
 
@@ -41,10 +41,10 @@ global.enviroment = 'api.stok.ly';
                     'Parent SKU': item.sku,
                     'Parent Name': item.name,
                     'Variable Attributes': variableAttributes,
-                    Format: `"${item.format == 1 ? 'Composite' : 'Variable'}"`,
+                    Format: item.format == 1 ? 'Composite' : 'Variable',
                     'Child SKU': child.sku,
                     'Child Name': child.name,
-                    'Composing Quantity': `"${child.composingItemQuantity || ''}"`
+                    'Composing Quantity': child.composingItemQuantity || undefined
                 })
             }
         }
