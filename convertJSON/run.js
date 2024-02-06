@@ -12,5 +12,8 @@ const {askQuestion} = require('../common.js');
 
     await askQuestion(`Add JSON strings to 'input.txt'. Seprate multiple strings with a newline (ENTER)\n\nPress ENTER to continue`)
 
-    fs.writeFileSync(`./output.csv`, convertCSV.json2csv(fs.readFileSync('./input.txt', 'utf8').split('\n').map(line => JSON.parse(line).data).reduce((acc, data) => acc.concat(data), []), {emptyFieldValue: ''}))
+    fs.writeFileSync(`./output.csv`, convertCSV.json2csv(fs.readFileSync('./input.txt', 'utf8')
+    .split('\n')
+    .map(line => JSON.parse(line).data)
+    .reduce((acc, data) => acc.concat(data), []), {emptyFieldValue: ''}))
 })()
