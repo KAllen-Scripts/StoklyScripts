@@ -14,6 +14,5 @@ const {askQuestion} = require('../common.js');
 
     fs.writeFileSync(`./output.csv`, convertCSV.json2csv(fs.readFileSync('./input.txt', 'utf8')
     .split('\n')
-    .map(line => JSON.parse(line).data)
-    .reduce((acc, data) => acc.concat(data), []), {emptyFieldValue: ''}))
+    .reduce((acc, data) => acc.concat(JSON.parse(data).data), []), {emptyFieldValue: ''}))
 })()
