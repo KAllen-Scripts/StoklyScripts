@@ -1,6 +1,6 @@
 const convertCSV = require("json-2-csv");
 const fs = require('fs');
-const common = require('../common.js');
+const {askQuestion, makeBold} = require('../common.js');
 
 (async ()=>{
 
@@ -10,8 +10,8 @@ const common = require('../common.js');
         fs.writeFileSync('./input.txt', '')
     }
 
-    console.log(common.makeBold(`Add JSON strings to 'input.txt'. Seprate multiple strings with a newline (ENTER)\n\n`))
-    await common.askQuestion('Press ENTER to continue')
+    console.log(makeBold(`Add JSON strings to 'input.txt'. Seprate multiple strings with a newline (ENTER)\n`))
+    await askQuestion('Press ENTER to continue')
 
     let JSONArray = fs.readFileSync('./input.txt', 'utf8').split('\n').map(line => JSON.parse(line).data)
 
