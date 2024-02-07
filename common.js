@@ -177,7 +177,7 @@ const askQuestion = (query) => {
         output: process.stdout,
     });
 
-    const boldQuery = `\x1b[1m${query}\x1b[0m`; // Add ANSI escape codes for bold text
+    const boldQuery = `${makeBold(query)}`; // Add ANSI escape codes for bold text
 
     return new Promise(resolve => rl.question(boldQuery, ans => {
         rl.close();
