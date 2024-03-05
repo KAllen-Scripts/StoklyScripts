@@ -32,7 +32,7 @@ async function getInput(suppliers){
                 }
 
                 if(row['supplier name'] != ''){supplier.name = row['supplier name']}
-                if(row['type [manufacturer/wholesaler]'] != ''){supplier.type = row['type [manufacturer/wholesaler]'].toLowerCase() == 'manufacturer' ? 0 : 1}
+                supplier.type = row['type [manufacturer/wholesaler]'].toLowerCase() == 'manufacturer' ? 0 : 1
                 if(row['account reference'] != ''){supplier.accountReference = row['account reference']}
                 if(row['tax rate'] != ''){supplier.taxRate = parseFloat(row['tax rate'])}
                 if(row['lead time'] != ''){supplier.leadTime = parseInt(row['lead time'])}
