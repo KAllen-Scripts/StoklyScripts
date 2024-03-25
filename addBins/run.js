@@ -9,7 +9,7 @@ async function getInput(){
     return new Promise((res,rej)=>{
         let payload = {bins:[]}
         const stream = fs.createReadStream('./input.csv')
-        .pipe(csv.parse({ headers: true }))
+        .pipe(csv.parse({headers: headers => headers.map(h => h.toLowerCase().trim())}))
         .on('error', error => console.error(error))
         .on('data',  row => {
             stream.pause()
