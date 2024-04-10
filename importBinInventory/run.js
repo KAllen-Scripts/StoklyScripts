@@ -50,7 +50,7 @@ async function adjustStock(bin, locationId, overRide){
                 "itemId": bin.items[item].itemId,
                 "quantity": bin.items[item].quantity
             })
-            if (stockUpdate.items.length >= 1000){
+            if (stockUpdate.items.length >= 500){
                 await common.requester('post', `https://${global.enviroment}/v1/adjustments`, stockUpdate)
                 stockUpdate.items = []
             }
