@@ -97,7 +97,7 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders, reAt
         data: data
     }
 
-    // tokens -= 1
+    tokens -= 1
     while (tokens <= 0){
         await sleep(100)
     }
