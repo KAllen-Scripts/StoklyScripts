@@ -1,55 +1,54 @@
 const common = require('../common.js')
 
-async function getAttIDs(attList){
-    let returnObj = {}
-    let createList = []
-    let addedAtts = []
-    let attDict = await getAtts()
-    const indexOfInsensitive = (array,string)=>{return array.findIndex(item =>  string.toLowerCase() === item.stoklyName.toLowerCase())}
+async function getAttIDs(attList) {
+    const returnObj = {};
+    const addedAtts = new Set();
+    const attDict = await getAtts();
 
-    for (const attribute of attList){
-        let count = 0
-        let attAdded = false
-        do{
+    // Helper function to manage case-insensitive uniqueness and create new names as needed
+    function getUniqueName(stoklyName) {
+        let baseName = stoklyName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        let count = 0;
+        let uniqueName = baseName;
 
-            count += 1
-            let attName = `${(attribute.value).normalize("NFD").replace(/[\u0300-\u036f]/g, "")}${count == 1 ? '' : ' - ' + count}`
-
-            if (!(addedAtts.includes(attName.toLowerCase()))){
-                addedAtts.push(attName.toLowerCase())
-                if(indexOfInsensitive(createList, attName) < 1){
-                    createList.push({stoklyName:attName,remoteName:attribute.value,ID:attribute.ID})
-                    attAdded = true
-                }
-            }
-
-        } while (attAdded == false)
-    }
-
-    let done = 0
-    for (const attribute of createList){
-        done += 1
-        returnObj[attribute.remoteName] = {}
-        if(attDict[(attribute.stoklyName.toLowerCase()).normalize("NFD").replace(/[\u0300-\u036f]/g, "")] != undefined){
-            returnObj[attribute.remoteName].localID = attDict[attribute.stoklyName.toLowerCase()]
-            returnObj[attribute.remoteName].localName = attribute.stoklyName.toLowerCase()
-            returnObj[attribute.remoteName].remoteID = attribute.ID
-            console.log(`Attribute ${attribute.stoklyName} already exists (${done}/${createList.length})`)
-        } else {
-            returnObj[attribute.remoteName].localID = await common.requester('post',`https://${enviroment}/v0/item-attributes`, {
-                "name": attribute.stoklyName,
-                "type": 0,
-                "defaultValue": "",
-                "allowedValues": []
-            }).then(r=>{return r.data.data.id})
-            returnObj[attribute.remoteName].localName = attribute.stoklyName.toLowerCase()
-            returnObj[attribute.remoteName].remoteID = attribute.ID
-            console.log(`Created ${attribute.stoklyName} (${done}/${createList.length})`)
+        // Use a loop to find the first available unique name
+        while (addedAtts.has(uniqueName.toLowerCase())) {
+            uniqueName = `${baseName} - ${++count + 1}`;
         }
+        
+        addedAtts.add(uniqueName.toLowerCase());
+        return uniqueName;
     }
-    let sortedReturn = sortObj(returnObj)
-    return sortedReturn
+
+    // Process each attribute for creation or linking
+    for (const attribute of attList) {
+        const uniqueStoklyName = getUniqueName(attribute.stoklyName);
+        const normalizedStoklyName = uniqueStoklyName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const existingAttribute = attDict[normalizedStoklyName];
+        
+        returnObj[attribute.remoteName] = {
+            localName: uniqueStoklyName, // Preserve the case-sensitive name
+            localID: existingAttribute ? existingAttribute : await createAttribute(uniqueStoklyName, attribute)
+        };
+    }
+
+    return sortObj(returnObj);
 }
+
+// Helper function to create an attribute in the remote system
+async function createAttribute(stoklyName, attribute) {
+    const response = await common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
+        name: stoklyName,
+        type: attribute?.overRides?.type || 0,
+        defaultValue: attribute?.overRides?.defaultValue || 0,
+        allowedValues: attribute?.overRides?.allowedValues || [],
+        allowedValueLabels: attribute?.overRides?.allowedValueLabels || []
+    });
+    // console.log(`Created ${stoklyName}`);
+    return response.data.data.id;
+}
+
+
 
 function sortObj(unsortedObject){
     let sortArr = []
@@ -72,23 +71,24 @@ function sortObj(unsortedObject){
 async function getAtts(){
     let returnObj = {}
     await common.loopThrough('Getting Attributes', `https://${enviroment}/v0/item-attributes`, 'size=1000', '[status]!={1}', function(attribute){
-        returnObj[(attribute.name.toLowerCase()).normalize("NFD").replace(/[\u0300-\u036f]/g, "")] = attribute.itemAttributeId
+        returnObj[normalize((attribute.name.toLowerCase()))] = attribute.itemAttributeId
     })
     return returnObj
 }
 
 
 async function checkSingleAttribute(name, overRideObj = {}){
-    let nameExists = await common.requester('get', `https://${global.enviroment}/v0/item-attributes?filter=(([name]=={${name}}))%26%26([status]!={1})`).then(r=>{return r.data.data})
-    if(nameExists.length == 0){
+    let attributes = await common.requester('get', `https://${global.enviroment}/v0/item-attributes?filter=(([name]=={${name}}))%26%26([status]!={1})`).then(r=>{return r.data.data})
+    if(attributes.length == 0){
         return common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
             "name": name,
             "type": overRideObj.type || 0,
             "defaultValue": overRideObj.defaultValue || "",
-            "allowedValues": overRideObj.allowedValues || []
+            "allowedValues": overRideObj.allowedValues || [],
+            "allowedValueLabels": overRideObj.allowedValues || []
         }).then(r=>{return r.data.data.id})
     }
-    return nameExists[0].itemAttributeId
+    return attributes[0].itemAttributeId
 }
 
 async function addAttributes(standardAtts, customAtts, remoteMappables){
@@ -113,8 +113,13 @@ async function addAttributes(standardAtts, customAtts, remoteMappables){
     return returnArr
 }
 
+const normalize = (str)=>{return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "")}
+const indexOfInsensitive = (array,string)=>{return array.findIndex(item =>  string.toLowerCase() === item.stoklyName.toLowerCase())}
+
 module.exports = {
     getAttIDs,
     checkSingleAttribute,
-    addAttributes
+    addAttributes,
+    indexOfInsensitive,
+    normalize
 };

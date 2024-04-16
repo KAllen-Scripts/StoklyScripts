@@ -31,7 +31,7 @@ const run = async (channel, scanID)=>{
     let attsToCreate = []
     for (const attribute of remoteAttributes){
         if (!isNaN(attribute.id)){
-            attsToCreate.push({value:attribute.name,ID:attribute.id})
+            attsToCreate.push({stoklyName:attribute.name,remoteName:attribute.id})
         }
     }
 
@@ -59,9 +59,10 @@ const run = async (channel, scanID)=>{
     postObj.attributeGroups[0].attributes = await localCommon.addAttributes(standardAtts, customAtts, ['marketplace'])
 
     for (const attribute in attributeRefs){
+        console.log(attributeRefs[attribute])
         postObj.attributeGroups[0].attributes.push({
             "localAttributeId": attributeRefs[attribute].localID,
-            "remoteAttributeId": attributeRefs[attribute].remoteID,
+            "remoteAttributeId": attribute,
             "remoteMappableIds": [
                 "marketplace"
             ],

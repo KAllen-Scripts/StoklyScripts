@@ -66,6 +66,7 @@ let run = async (channel, scanID)=> {
 
     let attObj = await localCommon.getAttIDs(obj.attributes)
 
+
     for (const attribute of Object.keys(attObj)){
         if(attribute.toLowerCase() != 'mpn' && attribute.toLowerCase() != 'ean'){
             postObj.attributeGroups[0].attributes.push({
@@ -109,7 +110,7 @@ const getData = async (scanID)=>{
                 if (item.unmappedData.ItemSpecifics != undefined){
                     for (const attribute of item.unmappedData.ItemSpecifics){
                         if (!(outArray.attTrack.includes(attribute.Name)) && attribute.Name != 'DescriptionTemplate'){
-                            outArray.attributes.push({value:attribute.Name,ID:outArray.attributes.length})
+                            outArray.attributes.push({stoklyName:attribute.Name, remoteName:attribute.Name})
                             outArray.attTrack.push(attribute.Name)
                         }
                     }
@@ -118,7 +119,7 @@ const getData = async (scanID)=>{
                 if (item.unmappedData.Variations != undefined){
                     for (const attribute of item.unmappedData.Variations.VariationSpecificsSet){
                         if (!(outArray.attTrack.includes(attribute.Name)) && attribute.Name != 'DescriptionTemplate'){
-                            outArray.attributes.push({value:attribute.Name,ID:outArray.attributes.length})
+                            outArray.attributes.push({stoklyName:attribute.Name, remoteName:attribute.Name})
                             outArray.attTrack.push(attribute.Name)
                         }
                     }
