@@ -15,6 +15,10 @@ let run = async (channel, scanID)=> {
 
     let magentoCategories = await getMagentoCategories(channel.data.uri)
 
+    console.log(magentoCategories)
+
+    return
+
     await common.requester('get', `https://api.stok.ly/v0/channels/${channel.channelId}/remote-mappables`).then(r=>{
         for (const attSet of r.data.data){
             attSets[attSet.id] = attSet.name

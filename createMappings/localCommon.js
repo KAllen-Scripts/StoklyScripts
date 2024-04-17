@@ -85,7 +85,7 @@ async function checkSingleAttribute(name, overRideObj = {}){
             "type": overRideObj.type || 0,
             "defaultValue": overRideObj.defaultValue || "",
             "allowedValues": overRideObj.allowedValues || [],
-            "allowedValueLabels": overRideObj.allowedValues || []
+            "allowedValueLabels": overRideObj.allowedValueLabels || []
         }).then(r=>{return r.data.data.id})
     }
     return attributes[0].itemAttributeId
