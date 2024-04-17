@@ -32,6 +32,7 @@ let run = async (channel, scanID)=> {
                 "mappableName": attSets[mappable]
             })
         }
+        return mappablesArray
     })()
 
     let attributeList = await (()=>{
