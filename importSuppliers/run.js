@@ -1,6 +1,7 @@
 const common = require('../common.js');
 const fs = require('fs');
 const csv = require('fast-csv');
+const csvWrite = require('json-2-csv');
 
 global.enviroment = 'api.stok.ly';
 
@@ -14,6 +15,7 @@ function caseInsensitiveNameCheck(suppliers, supplierName){
 }
 
 async function getInput(suppliers){
+    let failedImports = []
     let rowDone = false
     let rowCounter = 0
     return new Promise((res,rej)=>{
@@ -26,18 +28,18 @@ async function getInput(suppliers){
                 rowDone = false
 
                 let supplier = {}
-                if (!suppliers[row['supplier name'].toLowerCase()]){
+                if (suppliers[row['supplier name'].toLowerCase().trim()] == undefined){
                     supplier.new = true
-                    supplier.dropShips = false
+                    if(row['supplier name'] != ''){supplier.name = row['supplier name']}
                 }
 
-                if(row['supplier name'] != ''){supplier.name = row['supplier name']}
                 supplier.type = row['type [manufacturer/wholesaler]'].toLowerCase() == 'manufacturer' ? 0 : 1
                 if(row['account reference'] != ''){supplier.accountReference = row['account reference']}
                 if(row['tax rate'] != ''){supplier.taxRate = parseFloat(row['tax rate'])}
                 if(row['lead time'] != ''){supplier.leadTime = parseInt(row['lead time'])}
-                if(row['minimum spend'] != ''){supplier.minimumSpend = parseFloat(row['minimum spend'])}
+                if(row['minimum spend'] != '' && row['minimum spend'] > 0){supplier.minimumSpend = parseFloat(row['minimum spend'])}
                 if(row['currency'] != ''){supplier.currency = row['currency']}
+                if(row['dropShips'] != ''){supplier.dropShips = row['drop shipping enabled [yes/no]'].toLowerCase() == 'yes' ? true : false}
 
                 if(row['discount'] != '' && row['discount type'] != ''){
                     supplier.discount = {
@@ -97,9 +99,14 @@ async function getInput(suppliers){
                 } while (row[`contact ${contactNumber} name`] != undefined)
 
                 rowCounter += 1
-                console.log(`Done Supplier ${rowCounter}`)
 
-                await common.requester(supplier.new ? 'post' : 'patch', `https://api.stok.ly/v1/suppliers${supplier.new ? '' : '/' + suppliers[row['supplier name'].toLowerCase()]}`, supplier)
+                try{
+                    await common.requester(supplier.new ? 'post' : 'patch', `https://api.stok.ly/v1/suppliers${supplier.new ? '' : '/' + suppliers[row['supplier name'].toLowerCase()]}`, supplier, undefined, undefined, false)
+                    console.log(`Done Supplier ${rowCounter}`)
+                } catch (err) {
+                    console.log(`Failed to import Supplier ${row['supplier name']} [${rowCounter}]`)
+                    failedImports.push({...row, Reason: err.response.data.message, line: rowCounter})
+                }
 
                 rowDone = true
 
@@ -109,7 +116,7 @@ async function getInput(suppliers){
             do{
                 await common.sleep(200)
              } while (!rowDone)
-            res()
+            res(failedImports)
         })
     })
 }
@@ -117,8 +124,12 @@ async function getInput(suppliers){
 (async ()=>{
     let suppliers = {}
     await common.loopThrough('Getting Existing Suppliers', `https://${global.enviroment}/v1/suppliers`, 'size=1000', '[status]!={1}', async (supplier)=>{
-        suppliers[supplier.name.toLowerCase()] = supplier.supplierId
+        suppliers[supplier.name.toLowerCase().trim()] = supplier.supplierId
     })
-    await getInput(suppliers)
+    let failedImports = await getInput(suppliers)
+    if(failedImports.length){
+        let i = csvWrite.json2csv(failedImports)
+        fs.writeFileSync(`./failedImports.csv`, i)
+    }
     global.continueReplen = false
 })()

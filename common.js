@@ -112,19 +112,19 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders, reAt
             return requester(method, url, data)
         } else if (attempt && reAttempt) {
             let tryAgain
-            console.log(e)
+            // console.log(e)
             if(attempt >= 2){
                 tryAgain = attempt - 1
             } else if (attempt == 1){
                 tryAgain = await askQuestion(`Request Failed. Enter the number of times you want to retry, or 0 to give up: `).then(r=>{return parseInt(r)})
             } else {
-                return e
+                throw e
             }
             await sleep(3000)
             return requester(method, url, data, tryAgain)
         } else {
-            console.log(e)
-            return new Error(e);
+            // console.log(e)
+            throw e
         }
     })
 
