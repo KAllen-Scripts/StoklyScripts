@@ -23,9 +23,11 @@ async function getAttIDs(attList) {
     // Process each attribute for creation or linking
     for (const attribute of attList) {
         const uniqueStoklyName = getUniqueName(attribute.stoklyName);
-        const normalizedStoklyName = uniqueStoklyName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const normalizedStoklyName = uniqueStoklyName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         const existingAttribute = attDict[normalizedStoklyName];
         
+        console.log(attribute)
+
         returnObj[attribute.remoteName] = {
             localName: uniqueStoklyName, // Preserve the case-sensitive name
             localID: existingAttribute ? existingAttribute : await createAttribute(uniqueStoklyName, attribute)
@@ -36,15 +38,15 @@ async function getAttIDs(attList) {
 }
 
 // Helper function to create an attribute in the remote system
-async function createAttribute(stoklyName, attribute) {
+async function createAttribute(stoklyName, overRides) {
     const response = await common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
         name: stoklyName,
-        type: attribute?.overRides?.type || 0,
-        defaultValue: attribute?.overRides?.defaultValue || 0,
-        allowedValues: attribute?.overRides?.allowedValues || [],
-        allowedValueLabels: attribute?.overRides?.allowedValueLabels || []
+        type: overRides?.type || 0,
+        defaultValue: overRides?.defaultValue || 0,
+        allowedValues: overRides?.allowedValues || [],
+        allowedValueLabels: overRides?.allowedValueLabels || []
     });
-    // console.log(`Created ${stoklyName}`);
+    console.log(`Created ${stoklyName}`);
     return response.data.data.id;
 }
 
