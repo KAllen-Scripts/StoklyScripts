@@ -24,9 +24,6 @@ let run = async (channel, scanID)=> {
     let attDict = await getAttDict(channel.data.uri)
     let scanData = await getData(scanID)
 
-    console.log(attSets)
-    await common.askQuestion('PAUSE')
-
     let mappableList = (()=>{
         let mappablesArray = []
         for (const mappable of scanData.attSets){

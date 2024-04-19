@@ -9,8 +9,35 @@ const run = async (channel, scanID)=>{
     }
 
     let currentMapping = await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/mappings`).then(r=>{return r.data.data})
-
     let remoteAttributes = await common.requester('get',`https://${global.enviroment}/v0/channels/${channel.channelId}/remote-mappables/marketplace/attributes`).then(r=>{return r.data.data})
+
+    let attsToCreate = []
+    for (const attribute of remoteAttributes){
+        if (!isNaN(attribute.id)){
+            attsToCreate.push({stoklyName:attribute.name,remoteName:attribute.id})
+        }
+    }
+
+    let attributeRefs = await localCommon.getAttIDs(attsToCreate)
+
+    let plainAttributes = [
+        {local:'sku',remote:'sku'},
+        {local:'name',remote:'name'},
+        {local:'description',remote:'description'},
+        {local:'weight',remote:'weight'}
+    ]
+    
+    let prefixedAttributes = [
+        {"local": channel.name + ' - Status',"remote": "status"},
+        {"local": channel.name + ' - Featured',"remote": "featured"},
+        {"local": channel.name + ' - Visibility',"remote": "catalog_visibility"},
+        {"local": channel.name + ' - Price',"remote": "regular_price"},
+        {"local": channel.name + ' - Sale Price',"remote": "sale_price"},
+        {"local": channel.name + ' - Categories',"remote": "categories",overRide:{"type": 4,"allowedValues": itemsCheck.categories}},
+        {"local": channel.name + ' - Tax Rate',"remote": "tax_status"},
+        {"local": channel.name + ' - Shipping Class',"remote": "shipping_class"},
+        {"local": channel.name + ' - Tags',"remote": "tags",overRide:{"type": 4,"allowedValues": itemsCheck.tags}}
+    ]
 
     let postObj = {
         "remoteMappables": [
@@ -28,35 +55,7 @@ const run = async (channel, scanID)=>{
         ]
     }
 
-    let attsToCreate = []
-    for (const attribute of remoteAttributes){
-        if (!isNaN(attribute.id)){
-            attsToCreate.push({stoklyName:attribute.name,remoteName:attribute.id})
-        }
-    }
-
-    let attributeRefs = await localCommon.getAttIDs(attsToCreate)
-
-    let standardAtts = [
-        {local:'sku',remote:'sku'},
-        {local:'name',remote:'name'},
-        {local:'description',remote:'description'},
-        {local:'weight',remote:'weight'}
-    ]
-    
-    let customAtts = [
-        {"local": channel.name + ' - Status',"remote": "status"},
-        {"local": channel.name + ' - Featured',"remote": "featured"},
-        {"local": channel.name + ' - Visibility',"remote": "catalog_visibility"},
-        {"local": channel.name + ' - Price',"remote": "regular_price"},
-        {"local": channel.name + ' - Sale Price',"remote": "sale_price"},
-        {"local": channel.name + ' - Categories',"remote": "categories",overRide:{"type": 4,"allowedValues": itemsCheck.categories}},
-        {"local": channel.name + ' - Tax Rate',"remote": "tax_status"},
-        {"local": channel.name + ' - Shipping Class',"remote": "shipping_class"},
-        {"local": channel.name + ' - Tags',"remote": "tags",overRide:{"type": 4,"allowedValues": itemsCheck.tags}}
-    ]
-
-    postObj.attributeGroups[0].attributes = await localCommon.addAttributes(standardAtts, customAtts, ['marketplace'])
+    postObj.attributeGroups[0].attributes = await localCommon.addAttributes(plainAttributes, prefixedAttributes, ['marketplace'])
 
     for (const attribute in attributeRefs){
         console.log(attributeRefs[attribute])

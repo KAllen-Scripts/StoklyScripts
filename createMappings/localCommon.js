@@ -46,7 +46,6 @@ async function createAttribute(stoklyName, overRides) {
         allowedValues: overRides?.allowedValues,
         allowedValueLabels: overRides?.allowedValueLabels
     });
-    console.log(`Created ${stoklyName}`);
     return response.data.data.id;
 }
 
@@ -82,13 +81,7 @@ async function getAtts(){
 async function checkSingleAttribute(name, overRideObj = {}){
     let attributes = await common.requester('get', `https://${global.enviroment}/v0/item-attributes?filter=(([name]=={${name}}))%26%26([status]!={1})`).then(r=>{return r.data.data})
     if(attributes.length == 0){
-        return common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
-            "name": name,
-            "type": overRideObj.type || 0,
-            "defaultValue": overRideObj.defaultValue || null,
-            "allowedValues": overRideObj.allowedValues || [],
-            "allowedValueLabels": overRideObj.allowedValueLabels || []
-        }).then(r=>{return r.data.data.id})
+        return createAttribute(name, overRideObj)
     }
     return attributes[0].itemAttributeId
 }
