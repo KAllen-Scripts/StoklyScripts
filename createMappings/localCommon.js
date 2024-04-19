@@ -42,7 +42,7 @@ async function createAttribute(stoklyName, overRides) {
     const response = await common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
         name: stoklyName,
         type: overRides?.type || 0,
-        defaultValue: overRides?.defaultValue || null,
+        defaultValue: overRides?.defaultValue || "",
         allowedValues: overRides?.allowedValues,
         allowedValueLabels: overRides?.allowedValueLabels
     });
