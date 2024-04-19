@@ -24,9 +24,12 @@ let run = async (channel, scanID)=> {
     let attDict = await getAttDict(channel.data.uri)
     let scanData = await getData(scanID)
 
+    console.log(attSets)
+    await common.askQuestion('PAUSE')
+
     let mappableList = (()=>{
         let mappablesArray = []
-        for (const mappable of scanData.attIds){
+        for (const mappable of scanData.attSets){
             mappablesArray.push({
                 "mappableId": mappable,
                 "mappableName": attSets[mappable]
@@ -57,25 +60,25 @@ let run = async (channel, scanID)=> {
                     {
                         "localAttributeId": "name",
                         "remoteAttributeId": "name",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 0
                     },
                     {
                         "localAttributeId": "sku",
                         "remoteAttributeId": "sku",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 1
                     },
                     {
                         "localAttributeId": "weight",
                         "remoteAttributeId": "weight",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 2
                     },
                     {
                         "localAttributeId": "description",
                         "remoteAttributeId": "description",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 3
                     },
                     {
@@ -85,37 +88,37 @@ let run = async (channel, scanID)=> {
                             allowedValueLabels: magentoCategories.allowedValueLabels
                         }),
                         "remoteAttributeId": "category_ids",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 4
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Price', {type: 5}),
                         "remoteAttributeId": "price",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 5
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Short Description'),
                         "remoteAttributeId": "short_description",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 6
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Status', {type: 6, allowedValues: [0,1], allowedValueLabels: ['Disabled', 'Enabled']}),
                         "remoteAttributeId": "status",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 7
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Taxable', {type: 6, allowedValues: [0,1], allowedValueLabels: ['No', 'Yes']}),
                         "remoteAttributeId": "tax_class_id",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 8
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Visisbility', {type: 6, allowedValues: [1,2,3,4], allowedValueLabels: ['Not Visible Individually','Catelog','Search','Catelog, Search']}),
                         "remoteAttributeId": "visibility",
-                        "remoteMappableIds": mappableList,
+                        "remoteMappableIds": scanData.attSets,
                         "priority": 9
                     }
                 ],
@@ -128,14 +131,14 @@ let run = async (channel, scanID)=> {
         mappings.attributeGroups[0].attributes.push({
             "localAttributeId": attributeList[attribute].localID,
             "remoteAttributeId": attribute,
-            "remoteMappableIds": mappableList,
+            "remoteMappableIds": scanData.attSets,
             "priority": mappings.attributeGroups[0].attributes.length
         })
     }
 
     let currentMapping = await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/mappings`).then(r=>{return r.data.data})
+    console.log(mappings)
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, mappings)
-
 }
 
 const getMagentoCategories = async (uri) => {

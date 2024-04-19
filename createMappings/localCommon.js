@@ -42,9 +42,9 @@ async function createAttribute(stoklyName, overRides) {
     const response = await common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
         name: stoklyName,
         type: overRides?.type || 0,
-        defaultValue: overRides?.defaultValue || 0,
-        allowedValues: overRides?.allowedValues || [],
-        allowedValueLabels: overRides?.allowedValueLabels || []
+        defaultValue: overRides?.defaultValue || null,
+        allowedValues: overRides?.allowedValues,
+        allowedValueLabels: overRides?.allowedValueLabels
     });
     console.log(`Created ${stoklyName}`);
     return response.data.data.id;
@@ -85,7 +85,7 @@ async function checkSingleAttribute(name, overRideObj = {}){
         return common.requester('post', `https://${global.enviroment}/v0/item-attributes`, {
             "name": name,
             "type": overRideObj.type || 0,
-            "defaultValue": overRideObj.defaultValue || "",
+            "defaultValue": overRideObj.defaultValue || null,
             "allowedValues": overRideObj.allowedValues || [],
             "allowedValueLabels": overRideObj.allowedValueLabels || []
         }).then(r=>{return r.data.data.id})
