@@ -15,7 +15,7 @@ let run = async (channel, scanID)=> {
 
     let magentoCategories = await getMagentoCategories(channel.data.uri)
 
-    await common.requester('get', `https://api.stok.ly/v0/channels/${channel.channelId}/remote-mappables`).then(r=>{
+    await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/remote-mappables`).then(r=>{
         for (const attSet of r.data.data){
             attSets[attSet.id] = attSet.name
         }
@@ -174,13 +174,11 @@ const getAttDict = async (uri) => {
             name: attribute.default_frontend_label,
             options: (()=>{
                 let options = {
-                    allowedValues:[],
-                    allowedValueLabels: []
+                    allowedValues:[]
                 }
                 for (const option of attribute.options){
                     if(option.value == ''){continue}
-                    options.allowedValues.push(option.value)
-                    options.allowedValueLabels.push(option.label)
+                    options.allowedValues.push(option.label)
                 }
                 return options
             })()
