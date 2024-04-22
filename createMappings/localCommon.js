@@ -44,6 +44,7 @@ async function createAttribute(stoklyName, overRides) {
         allowedValues: overRides?.allowedValues,
         allowedValueLabels: overRides?.allowedValueLabels
     });
+    console.log(`Created ${stoklyName}`)
     return response.data.data.id;
 }
 
@@ -84,35 +85,12 @@ async function checkSingleAttribute(name, overRideObj = {}){
     return attributes[0].itemAttributeId
 }
 
-async function addAttributes(standardAtts, customAtts, remoteMappables){
-    let returnArr = []
-    for(const attribute of standardAtts){
-        returnArr.push({
-            "localAttributeId": attribute.local,
-            "remoteAttributeId": attribute.remote,
-            "remoteMappableIds": remoteMappables,
-            "priority": returnArr.length
-        })
-    }
-
-    for(const attribute of customAtts){
-        returnArr.push({
-            "localAttributeId": await checkSingleAttribute(attribute.local, attribute.overRide || {}),
-            "remoteAttributeId": attribute.remote,
-            "remoteMappableIds": remoteMappables,
-            "priority": returnArr.length
-        })
-    }
-    return returnArr
-}
-
 const normalize = (str)=>{return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "")}
 const indexOfInsensitive = (array,string)=>{return array.findIndex(item =>  string.toLowerCase() === item.stoklyName.toLowerCase())}
 
 module.exports = {
     getAttIDs,
     checkSingleAttribute,
-    addAttributes,
     indexOfInsensitive,
     normalize
 };
