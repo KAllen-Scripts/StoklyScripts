@@ -13,8 +13,8 @@ const run = async (channel, scanID)=>{
     let remoteAttributes = await common.requester('get',`https://${global.enviroment}/v0/channels/${channel.channelId}/remote-mappables/marketplace/attributes`).then(r=>{return r.data.data})
 
     //Not too sure about my naming here, but cannot think of what to call this function
-    let wooCategories = await getWooDict(channel, 'categories')
-    let wooTags = await getWooDict(channel, 'tags')
+    let wooCategories = await getWooDict(channel, 'categories', 'Getting Woo Categories')
+    let wooTags = await getWooDict(channel, 'tags', 'Getting Woo Tags')
 
     //Not sure if I want to pre-populate terms or not here. WooCommerce automatically adds them to attributes, so is it neccesary?
     //tbh, might just add a toggle so the user can decide if these are dropdowns or not
@@ -36,7 +36,7 @@ const run = async (channel, scanID)=>{
     ]
     
     let prefixedAttributes = [
-        {"stoklyName": channel.name + ' - Status',"remoteName": "status", overRides:{type: 6, allowedValues: ['publish','pending','draft']}},
+        {"stoklyName": channel.name + ' - Status',"remoteName": "status", overRides:{type: 6, allowedValues: ['publish','pending','draft','private']}},
         {"stoklyName": channel.name + ' - Featured',"remoteName": "featured", overRides:{type: 3}},
         {"stoklyName": channel.name + ' - Visibility',"remoteName": "catalog_visibility", overRides:{type: 6, allowedValues: ['visible','catalog','search','hidden'], allowedValueLabels: ['Shop and search results','Shop only','Search results only','Hidden']}},
         {"stoklyName": channel.name + ' - Price',"remoteName": "regular_price", overRides:{type: 7}},
@@ -91,9 +91,9 @@ const run = async (channel, scanID)=>{
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, postObj)
 };
 
-function getWooDict(channel, type) {
+function getWooDict(channel, type, message) {
     let items = { allowedValues: [], allowedValueLabels: [] };
-    return wooLoop('Getting Woo Categories', channel, `${channel.data.uri}/wp-json/wc/v3/products/${type}`, (item) => {
+    return wooLoop(message, channel, `${channel.data.uri}/wp-json/wc/v3/products/${type}`, (item) => {
         items.allowedValues.push(item.id);
         items.allowedValueLabels.push(item.name);
     }).then(() => {
