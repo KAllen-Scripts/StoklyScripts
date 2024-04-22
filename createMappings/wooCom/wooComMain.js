@@ -35,11 +35,10 @@ const run = async (channel, scanID)=>{
         {stoklyName:'weight',remoteName:'weight'}
     ]
     
-    //Visibility and Status seem to have issues. Won't bother adding them for now as they aren't essential
     let prefixedAttributes = [
-        // {"stoklyName": channel.name + ' - Status',"remoteName": "status", overRides:{type: 4, allowedValues: ['publish','pending','draft']}},
+        {"stoklyName": channel.name + ' - Status',"remoteName": "status", overRides:{type: 6, allowedValues: ['publish','pending','draft']}},
         {"stoklyName": channel.name + ' - Featured',"remoteName": "featured", overRides:{type: 3}},
-        // {"stoklyName": channel.name + ' - Visibility',"remoteName": "catalog_visibility", overRides:{type: 4, allowedValues: ['visible','catalog','search','hidden'], allowedValueLabels: ['Shop and search results','Shop only','Search results only','Hidden']}},
+        {"stoklyName": channel.name + ' - Visibility',"remoteName": "catalog_visibility", overRides:{type: 6, allowedValues: ['visible','catalog','search','hidden'], allowedValueLabels: ['Shop and search results','Shop only','Search results only','Hidden']}},
         {"stoklyName": channel.name + ' - Price',"remoteName": "regular_price", overRides:{type: 7}},
         {"stoklyName": channel.name + ' - Sale Price',"remoteName": "sale_price", overRides:{type: 7}},
         {"stoklyName": channel.name + ' - Categories',"remoteName": "categories", overRides:{"type": 4, ...wooCategories}},
