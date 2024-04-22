@@ -107,7 +107,7 @@ let run = async (channel, scanID)=> {
                         "priority": 7
                     },
                     {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Taxable', {type: 6, allowedValues: [1,0], allowedValueLabels: ['Taxable', 'Non-Taxable']}),
+                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Taxable'),
                         "remoteAttributeId": "tax_class_id",
                         "remoteMappableIds": scanData.attSets,
                         "priority": 8

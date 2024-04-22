@@ -1,6 +1,7 @@
 const common = require('../../common.js');
 const localCommon = require('../localCommon.js')
 const fs = require('fs');
+const axios = require('axios');
 
 const run = async (channel, scanID)=>{
     let itemsCheck = await checkForInvalidAttributes(scanID, channel)
@@ -11,7 +12,8 @@ const run = async (channel, scanID)=>{
     let currentMapping = await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/mappings`).then(r=>{return r.data.data})
     let remoteAttributes = await common.requester('get',`https://${global.enviroment}/v0/channels/${channel.channelId}/remote-mappables/marketplace/attributes`).then(r=>{return r.data.data})
 
-    let wooCategories = await getWooCategories(channel)
+    let wooCategories = await getWooDict(channel, 'categories')
+    let wooTags = await getWooDict(channel, 'tags')
 
     let attsToCreate = []
     for (const attribute of remoteAttributes){
@@ -31,15 +33,14 @@ const run = async (channel, scanID)=>{
     ]
     
     let prefixedAttributes = [
-        {"stoklyName": channel.name + ' - Status',"remoteName": "status"},
-        {"stoklyName": channel.name + ' - Featured',"remoteName": "featured"},
-        {"stoklyName": channel.name + ' - Visibility',"remoteName": "catalog_visibility"},
-        {"stoklyName": channel.name + ' - Price',"remoteName": "regular_price"},
-        {"stoklyName": channel.name + ' - Sale Price',"remoteName": "sale_price"},
-        {"stoklyName": channel.name + ' - Categories',"remoteName": "categories",overRides:{"type": 4,"allowedValues": itemsCheck.categories}},
-        {"stoklyName": channel.name + ' - Tax Rate',"remoteName": "tax_status"},
-        {"stoklyName": channel.name + ' - Shipping Class',"remoteName": "shipping_class"},
-        {"stoklyName": channel.name + ' - Tags',"remoteName": "tags",overRides:{"type": 4,"allowedValues": itemsCheck.tags}}
+        {"stoklyName": channel.name + ' - Status',"remoteName": "status", overRides:{type: 4, allowedValues: ['publish','pending','draft']}},
+        {"stoklyName": channel.name + ' - Featured',"remoteName": "featured", overRides:{type: 3}},
+        {"stoklyName": channel.name + ' - Visibility',"remoteName": "catalog_visibility", overRides:{type: 4, allowedValues: ['visible','catelog','search','hidden'], allowedValueLabels: ['Shop and search results','Shop only','Search results only','Hidden']}},
+        {"stoklyName": channel.name + ' - Price',"remoteName": "regular_price", overRides:{type: 7}},
+        {"stoklyName": channel.name + ' - Sale Price',"remoteName": "sale_price", overRides:{type: 7}},
+        {"stoklyName": channel.name + ' - Categories',"remoteName": "categories", overRides:{"type": 4, ...wooCategories}},
+        {"stoklyName": channel.name + ' - Tax Rate',"remoteName": "tax_status", overRides:{type: 3}},
+        {"stoklyName": channel.name + ' - Tags',"remoteName": "tags", overRides:{"type": 4, ...wooTags}}
     ]
 
     let attributes = []
@@ -87,12 +88,51 @@ const run = async (channel, scanID)=>{
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, postObj)
 };
 
-async function getWooCategories(channel){
-    
+function getWooDict(channel, type) {
+    let items = { allowedValues: [], allowedValueLabels: [] };
+    return wooLoop('Getting Woo Categories', channel, `${channel.data.uri}/wp-json/wc/v3/products/${type}`, (item) => {
+        items.allowedValues.push(item.id);
+        items.allowedValueLabels.push(item.name);
+    }).then(() => {
+        let combined = items.allowedValues.map((id, index) => {
+            return { id: id, name: items.allowedValueLabels[index] };
+        });
+        combined.sort((a, b) => a.name.localeCompare(b.name));
+        items.allowedValues = combined.map(item => item.id);
+        items.allowedValueLabels = combined.map(item => item.name);
+
+        return items;
+    });
+}
+
+async function wooLoop(message, channel, url, callback){
+    let currentPage = 1
+    let done = 0
+    do {
+        var wooData = await axios({
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `${url}?per_page=100&page=${currentPage}`,
+            headers: {
+                'Authorization': `Basic ${btoa(`${channel.data.consumerKey}:${channel.data.consumerSecret}`)}`
+            }
+        }).then(r => {
+            return r.data
+        })
+        for (const item of wooData){
+            await callback(item)
+            done += 1
+            if(message != ''){
+                console.log(`${message} ${done}`)
+            }
+        }
+
+        currentPage += 1
+    } while (wooData.length >= 100)
 }
 
 async function checkForInvalidAttributes(scanID, channel){
-    let returnObj = {invalidFound:false, tagsArr:[], categoriesArr:[]}
+    let returnObj = {invalidFound:false}
     fs.writeFileSync(`./wooCom/Invalid Attributes - ${channel.name}.csv`, `"SKU","Name","ListingID","Invalid Attribute","Used for variations"\r\n`)
     let myWrite = fs.createWriteStream(`./wooCom/Invalid Attributes - ${channel.name}.csv`, {flags:'a'})
     await common.loopThrough('Checking for invalid Attributes', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (listing)=>{
@@ -102,19 +142,7 @@ async function checkForInvalidAttributes(scanID, channel){
                 myWrite.write(`"${listing.sku}","${listing.name}","${listing.scannedListingId}","${attribute.name}","${attribute.variation}"\r\n`)
             }
         }
-        for(const tag of listing.unmappedData.tags){
-            if (returnObj.tagsArr.includes(tag)){
-                returnObj.tagsArr.push(tag)
-            }
-        }
-        for(const category of listing.unmappedData.categories){
-            if (returnObj.categoriesArr.includes(category)){
-                returnObj.categoriesArr.push(category)
-            }
-        }
     })
-    returnObj.tagsArr.sort()
-    returnObj.categoriesArr.sort()
     return returnObj
 }
 
