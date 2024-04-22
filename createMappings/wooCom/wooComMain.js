@@ -15,6 +15,8 @@ const run = async (channel, scanID)=>{
     let wooCategories = await getWooDict(channel, 'categories')
     let wooTags = await getWooDict(channel, 'tags')
 
+    //Not sure if I want to pre-populate terms or not here. WooCommerce automatically adds them to attributes, so is it neccesary?
+    //tbh, might just add a toggle so the user can decide if these are dropdowns or not
     let attsToCreate = []
     for (const attribute of remoteAttributes){
         if (!isNaN(attribute.id)){
@@ -32,6 +34,7 @@ const run = async (channel, scanID)=>{
         {stoklyName:'weight',remoteName:'weight'}
     ]
     
+    //Visibility and Status seem to have issues. Won't bother adding them for now as they aren't essential
     let prefixedAttributes = [
         // {"stoklyName": channel.name + ' - Status',"remoteName": "status", overRides:{type: 4, allowedValues: ['publish','pending','draft']}},
         {"stoklyName": channel.name + ' - Featured',"remoteName": "featured", overRides:{type: 3}},
