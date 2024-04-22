@@ -12,6 +12,7 @@ const run = async (channel, scanID)=>{
     let currentMapping = await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/mappings`).then(r=>{return r.data.data})
     let remoteAttributes = await common.requester('get',`https://${global.enviroment}/v0/channels/${channel.channelId}/remote-mappables/marketplace/attributes`).then(r=>{return r.data.data})
 
+    //Not too sure about my naming here, but cannot think of what to call this function
     let wooCategories = await getWooDict(channel, 'categories')
     let wooTags = await getWooDict(channel, 'tags')
 
