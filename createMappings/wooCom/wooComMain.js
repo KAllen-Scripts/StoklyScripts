@@ -11,7 +11,7 @@ const run = async (channel, scanID)=>{
     let currentMapping = await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/mappings`).then(r=>{return r.data.data})
     let remoteAttributes = await common.requester('get',`https://${global.enviroment}/v0/channels/${channel.channelId}/remote-mappables/marketplace/attributes`).then(r=>{return r.data.data})
 
-    // let getCategories = await getWooCategories()
+    let wooCategories = await getWooCategories(channel)
 
     let attsToCreate = []
     for (const attribute of remoteAttributes){
@@ -86,6 +86,10 @@ const run = async (channel, scanID)=>{
 
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, postObj)
 };
+
+async function getWooCategories(channel){
+    
+}
 
 async function checkForInvalidAttributes(scanID, channel){
     let returnObj = {invalidFound:false, tagsArr:[], categoriesArr:[]}
