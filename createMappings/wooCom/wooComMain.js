@@ -13,8 +13,8 @@ const run = async (channel, scanID)=>{
     let remoteAttributes = await common.requester('get',`https://${global.enviroment}/v0/channels/${channel.channelId}/remote-mappables/marketplace/attributes`).then(r=>{return r.data.data})
 
     //Not too sure about my naming here, but cannot think of what to call this function
-    let wooCategories = await getWooDict(channel, 'categories', 'Getting Woo Categories')
-    let wooTags = await getWooDict(channel, 'tags', 'Getting Woo Tags')
+    let wooCategories = await getWooDict(channel, 'categories')
+    let wooTags = await getWooDict(channel, 'tags')
 
     //Not sure if I want to pre-populate terms or not here. WooCommerce automatically adds them to attributes, so is it neccesary?
     //tbh, might just add a toggle so the user can decide if these are dropdowns or not
@@ -91,9 +91,9 @@ const run = async (channel, scanID)=>{
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, postObj)
 };
 
-function getWooDict(channel, type, message) {
+function getWooDict(channel, type) {
     let items = { allowedValues: [], allowedValueLabels: [] };
-    return wooLoop(message, channel, `${channel.data.uri}/wp-json/wc/v3/products/${type}`, (item) => {
+    return wooLoop(`Getting Woo ${type}`, channel, `${channel.data.uri}/wp-json/wc/v3/products/${type}`, (item) => {
         items.allowedValues.push(item.id);
         items.allowedValueLabels.push(item.name);
     }).then(() => {
