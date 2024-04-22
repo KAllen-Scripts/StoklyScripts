@@ -89,7 +89,7 @@ let run = async (channel, scanID)=> {
                         "priority": 4
                     },
                     {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Price', {type: 5}),
+                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Price', {type: 7}),
                         "remoteAttributeId": "price",
                         "remoteMappableIds": scanData.attSets,
                         "priority": 5
@@ -107,7 +107,7 @@ let run = async (channel, scanID)=> {
                         "priority": 7
                     },
                     {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Taxable', {type: 6, allowedValues: [0,1], allowedValueLabels: ['No', 'Yes']}),
+                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Taxable'),
                         "remoteAttributeId": "tax_class_id",
                         "remoteMappableIds": scanData.attSets,
                         "priority": 8
@@ -134,7 +134,6 @@ let run = async (channel, scanID)=> {
     }
 
     let currentMapping = await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/mappings`).then(r=>{return r.data.data})
-    console.log(mappings)
     await common.requester('patch', `https://${global.enviroment}/v1/mappings/${currentMapping.mappingId}`, mappings)
 }
 

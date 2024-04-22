@@ -25,8 +25,6 @@ async function getAttIDs(attList) {
         const uniqueStoklyName = getUniqueName(attribute.stoklyName);
         const normalizedStoklyName = uniqueStoklyName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         const existingAttribute = attDict[normalizedStoklyName];
-        
-        console.log(attribute)
 
         returnObj[attribute.remoteName] = {
             localName: uniqueStoklyName, // Preserve the case-sensitive name
