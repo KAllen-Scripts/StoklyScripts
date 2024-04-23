@@ -113,7 +113,7 @@ let run = async (channel, scanID)=> {
                         "priority": 8
                     },
                     {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Visisbility', {type: 6, allowedValues: [1,2,3,4], allowedValueLabels: ['Not Visible Individually','Catelog','Search','Catelog, Search']}),
+                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Visibility', {type: 6, allowedValues: [1,2,3,4], allowedValueLabels: ['Not Visible Individually','Catelog','Search','Catelog, Search']}),
                         "remoteAttributeId": "visibility",
                         "remoteMappableIds": scanData.attSets,
                         "priority": 9
