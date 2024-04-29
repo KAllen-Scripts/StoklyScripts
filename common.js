@@ -11,10 +11,8 @@ var accessToken = {}
 var authMethod
 var adminToken = {}
 
-const tokensOverMinute = 240
-const maxTokensToHold = 3
-const refreshTokenAmount = 3
-let tokens = 0
+let remainingTokens = null
+let lastTokenRefresh = null
 
 var logWrite = fs.createWriteStream('./log.txt', {flags: 'a'});
 
@@ -22,15 +20,6 @@ let dateOptions = {
     weekday: "long", year: "numeric", month: "short",  
     day: "numeric", hour: "2-digit", minute: "2-digit"  
 }; 
-
-//refil the token bucket every calculated interval, up to set maximum
-async function replenTokens(){
-    do{
-        if((tokens + refreshTokenAmount) <= maxTokensToHold){tokens += refreshTokenAmount}
-        await (sleep(60000/(tokensOverMinute/refreshTokenAmount)))
-    } while (global.continueReplen)
-}
-
 
 // generic wait for timeout function to handle a delay
 const sleep = (ms) => {
@@ -97,12 +86,16 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders, reAt
         data: data
     }
 
-    tokens -= 1
-    while (tokens <= 0){
-        await sleep(100)
+    if(remainingTokens <= 3){
+        while ((Date.now() - lastTokenRefresh) <= 60000){
+            await sleep(100)
+        }
+        lastTokenRefresh = Date.now()
     }
 
+
     let returnVal = await axios(sendRequest).catch(async e=>{
+        remainingTokens = e.response.headers['x-ratelimit-remaining']
         if(e?.response?.data?.message == 'jwt expired' || e?.response?.data?.message == 'Invalid admin session'){
             if(authMethod){
                 await getAdminToken()
@@ -133,6 +126,8 @@ const requester = async (method, url, data, attempt = 2, additionalHeaders, reAt
     if(global.debugMode){
         console.log(sendRequest)
     }
+
+    remainingTokens = returnVal.headers['x-ratelimit-remaining']
 
     return returnVal
     
@@ -188,7 +183,6 @@ const askQuestion = (query) => {
 
 const authenticate = async ()=>{
     global.continueReplen = true
-    replenTokens()
     do{
         var authenticated = false
 
@@ -211,6 +205,7 @@ const authenticate = async ()=>{
         }
     } while (!authenticated)
 
+    lastTokenRefresh = Date.now()
     
     console.log(`${'|'.repeat(80)}\n\nAUTHENTICATED\n\n${'|'.repeat(80)}`)
 }
