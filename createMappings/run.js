@@ -1,9 +1,10 @@
-const ebayMain = require('./eBay/ebayMain.js')
-const wooComMain = require('./wooCom/wooComMain.js')
-const amazonMain = require('./amazon/amazonMain.js')
-const shopifyMain = require('./shopify/shopifyMain.js')
-const magentoMain = require('./magento/magentoMain.js')
-const common = require('../common.js')
+const ebayMain = require('./eBay/ebayMain.js');
+const wooComMain = require('./wooCom/wooComMain.js');
+const amazonMain = require('./amazon/amazonMain.js');
+const shopifyMain = require('./shopify/shopifyMain.js');
+const magentoMain = require('./magento/magentoMain.js');
+const common = require('../common.js');
+const {getAtts} = require('./localCommon.js');
 
 global.enviroment = 'api.stok.ly';
 
@@ -21,6 +22,8 @@ global.enviroment = 'api.stok.ly';
     }
 
     let channelList = await common.requester('get', `https://${global.enviroment}/v0/channels?size=1000&filter=[status]!={2}`).then(r=>{return r.data.data})
+
+    await getAtts()
 
     for (const channel of channelList){
 

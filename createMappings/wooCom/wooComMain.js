@@ -97,14 +97,7 @@ function getWooDict(channel, type) {
         items.allowedValues.push(item.id);
         items.allowedValueLabels.push(item.name);
     }).then(() => {
-        let combined = items.allowedValues.map((id, index) => {
-            return { id: id, name: items.allowedValueLabels[index] };
-        });
-        combined.sort((a, b) => a.name.localeCompare(b.name));
-        items.allowedValues = combined.map(item => item.id);
-        items.allowedValueLabels = combined.map(item => item.name);
-
-        return items;
+        return items
     });
 }
 
