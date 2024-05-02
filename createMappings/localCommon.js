@@ -41,6 +41,7 @@ async function getAttIDs(attList) {
 }
 
 async function updateTerms(stoklyAttribute, attributeDetails){
+    if(!Array.isArray(attributeDetails.allowedValues)){return}
     let optionsAdded = false
     for (const option in stoklyAttribute.allowedValues){
         if (stoklyAttribute.allowedValueLabels[option] == undefined){
@@ -58,7 +59,7 @@ async function updateTerms(stoklyAttribute, attributeDetails){
 
     sortObj(stoklyAttribute)
 
-    await common.requester('patch', `https://${global.enviroment}/v0/item-attributes/${stoklyAttribute.ID}`, stoklyAttribute)
+    if(optionsAdded){await common.requester('patch', `https://${global.enviroment}/v0/item-attributes/${stoklyAttribute.ID}`, stoklyAttribute)}
 
 }
 
@@ -128,6 +129,7 @@ async function getAtts(){
 
 async function checkSingleAttribute(name, overRideObj = {}){
     if(attDict[normalize(name).toLowerCase()]){
+        await updateTerms(attDict[normalize(name).toLowerCase(overRideObj)], overRideObj)
         return attDict[normalize(name).toLowerCase()].ID
     }
     return createAttribute(name, overRideObj)
