@@ -38,6 +38,8 @@ async function getInput(){
 
     let toCollect = []
 
+    let activeItems = await getActiveItems()
+
     const defaultBin = await common.requester('get', `https://${global.enviroment}/v0/locations/${locationID}/bins?filter=[default]=={1}`).then(r=>{return r.data.data[0].binId})
 
     await common.loopThrough('Checking Orders', `https://${global.enviroment}/v2/saleorders`, `sortDirection=DESC&sortField=createdAt&size=1000`, `(([stage]=={order}%26%26[itemStatuses]::{unprocessed}))%26%26([stage]!={removed})`, async (item)=>{
@@ -63,10 +65,12 @@ async function getInput(){
             for(const i of r.data.data){
                 if(i.status != 'unprocessed'){continue}
 
-                adjustObj.items.push({
-                    itemId: i.referenceId,
-                    quantity: i.quantity
-                })
+                if(activeItems.includes(i.referenceId)){
+                    adjustObj.items.push({
+                        itemId: i.referenceId,
+                        quantity: i.quantity
+                    })
+                }
 
                 postObj.items.push({
                     lineId: i.lineId,
@@ -74,7 +78,7 @@ async function getInput(){
                 })
             }
             await common.requester('post',`https://${global.enviroment}/v2/saleorders/${toCollect[item].saleOrderId}/collect-items`, postObj)
-            if(resetInv){await common.requester('post', `https://${global.enviroment}/v1/adjustments`, adjustObj)}
+            if((resetInv) && (adjustObj.items.length > 0)){await common.requester('post', `https://${global.enviroment}/v1/adjustments`, adjustObj)}
             await common.sleep(3000)
             console.log(`Done ${parseInt(item) + 1} of ${toCollect.length} | ${toCollect[item].niceId}`)
         })
@@ -82,3 +86,10 @@ async function getInput(){
     }
     global.continueReplen = false
 })()
+
+function getActiveItems(){
+    let activeItems = []
+    return common.loopThrough('Getting Active Items', `https://${global.enviroment}/v0/items`, 'size=1000', '[status]!={1}', (item)=>{
+        activeItems.push(item.itemId)
+    }).then(()=>{return activeItems})
+}
