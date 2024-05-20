@@ -88,7 +88,7 @@ async function getInventory(locations, itemDict){
         .on('data',  row => {
             stream.pause()
 
-            if ((locations?.[row?.['location']?.toLowerCase()]?.bins?.[row?.['bin']?.toLowerCase()]) != undefined){
+            if (((locations?.[row?.['location']?.toLowerCase()]?.bins?.[row?.['bin']?.toLowerCase()]) != undefined) && itemDict[row['sku'].toLowerCase()] != undefined){
                 if (locations[row['location'].toLowerCase()].bins[row['bin'].toLowerCase()].items[row['sku'].toLowerCase()] == undefined){
                     locations[row['location'].toLowerCase()].bins[row['bin'].toLowerCase()].items[row['sku'].toLowerCase()] = {
                         itemId: itemDict[row['sku'].toLowerCase()],
@@ -100,10 +100,10 @@ async function getInventory(locations, itemDict){
                     binCount.push(row['bin'].toLowerCase())
                 }
             } else {
-                missedInv.write(rowCount)
-                missedInv.write(row['location'])
-                missedInv.write(row['bin'])
-                missedInv.write(row['sku'])
+                missedInv.write(String(rowCount) + ',')
+                missedInv.write(row['location'] + ',')
+                missedInv.write(row['bin'] + ',')
+                missedInv.write(row['sku'] + ',')
                 missedInv.write(row['inventory'])
                 missedInv.write(`\r\n`)
             }
