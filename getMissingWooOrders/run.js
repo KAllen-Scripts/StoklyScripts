@@ -11,20 +11,23 @@ global.enviroment = 'api.dev.stok.ly';
     let accountKey = await common.requester('get', `https://${global.enviroment}/v0/items`).then(r=>{
         return r.data.data[0].accountkey
     })
-    let secret = generateWebhookSecret(accountKey, channel.channelId, 'order.created')
 
     await wooLoop(`Checking Orders`, channel, `${channel.data.uri}/wp-json/wc/v3/orders`, async (order)=>{
 
         let existingOrder = await common.requester('get', `https://${global.enviroment}/v2/saleorders?filter=[sourceReferenceId]=={${order.id}}`).then(r=>{return r.data.data.length})
 
+        let topic = 'created'
 
+        if(existingOrder > 0){
+            topic = 'updated'
+        }
 
-        if(existingOrder > 0){return}
+        let secret = generateWebhookSecret(accountKey, channel.channelId, `order.${topic}`)
 
         let headers = { 
-            'x-wc-webhook-topic': 'order.created', 
+            'x-wc-webhook-topic': `order.${topic}`, 
             'x-wc-webhook-resource': 'order', 
-            'x-wc-webhook-event': 'created', 
+            'x-wc-webhook-event': topic, 
             'x-wc-webhook-signature': generateSignature(JSON.stringify(order), secret), 
             'Content-Type': 'application/json'
         }
