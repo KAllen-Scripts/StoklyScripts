@@ -5,8 +5,8 @@ const axios = require('axios');
 global.enviroment = 'api.dev.stok.ly';
 
 (async ()=>{
-    let channel = await common.askQuestion('Enter Channel ID: ').then(r=>{return common.requester('get', `https://${global.enviroment}/v0/channels/${r}`)}).then(r=>{return r.data.data})
     let timeLimit = await common.askQuestion(`In hours, how far back are we going? Leave blank for 4 days: `).then(r=>{return parseInt((r || 95.5)*60*60*1000)})
+    let channel = await common.askQuestion('Enter Channel ID: ').then(r=>{return common.requester('get', `https://${global.enviroment}/v0/channels/${r}`)}).then(r=>{return r.data.data})
 
     let accountKey = await common.requester('get', `https://${global.enviroment}/v0/items`).then(r=>{
         return r.data.data[0].accountkey
