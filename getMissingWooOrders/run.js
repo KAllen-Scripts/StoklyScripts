@@ -14,27 +14,34 @@ global.enviroment = 'api.dev.stok.ly';
 
     let secret = generateWebhookSecret(accountKey, channel.channelId, `order.updated`)
 
+    let missedOrders = []
+
     await wooLoop(`Checking Orders`, channel, `${channel.data.uri}/wp-json/wc/v3/orders`, async (order)=>{
 
-        let headers = { 
-            'x-wc-webhook-topic': `order.updated`, 
-            'x-wc-webhook-resource': 'order', 
-            'x-wc-webhook-event': 'updated', 
-            'x-wc-webhook-signature': generateSignature(JSON.stringify(order), secret), 
-            'Content-Type': 'application/json'
+        try {
+            let headers = { 
+                'x-wc-webhook-topic': `order.updated`, 
+                'x-wc-webhook-resource': 'order', 
+                'x-wc-webhook-event': 'updated', 
+                'x-wc-webhook-signature': generateSignature(JSON.stringify(order), secret), 
+                'Content-Type': 'application/json'
+            }
+    
+            if ((new Date(order.date_created)) < (new Date(new Date(Date.now()).getTime() - timeLimit))){
+                return false
+            }
+    
+            await axios({
+                method: 'post',
+                headers: headers,
+                url: `https://${accountKey}.woocommerce-${global.enviroment}/notifications?channelId=${channel.channelId}`,
+                data: order
+            })
+        } catch {
+            missedOrders.push(order.id)
         }
-
-        if ((new Date(order.date_created)) < (new Date(new Date(Date.now()).getTime() - timeLimit))){
-            return false
-        }
-
-        await axios({
-            method: 'post',
-            headers: headers,
-            url: `https://${accountKey}.woocommerce-${global.enviroment}/notifications?channelId=${channel.channelId}`,
-            data: order
-        })
     })
+    if (missedOrders.length > 0){console.log(`Failed Orders: `, missedOrders)}
 })()
 
 async function wooLoop(message, channel, url, callback){
