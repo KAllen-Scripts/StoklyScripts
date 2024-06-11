@@ -9,9 +9,15 @@ global.enviroment = 'api.stok.ly';
     //Start with empty array
     let csvArr = []
 
+    var stopWhenSynced = 0
+
     let channelID = await common.askQuestion('Enter the channel ID: ')
 
     let getErrors = await common.askQuestion('Are we exporting errors? 1 = Yes, 0 = No: ').then(r=>{return parseInt(r)})
+
+    if (getErrors){
+        stopWhenSynced = await common.askQuestion('Are we getting all errors, or just as far back as the last sync? 1 = Last Sync, 0 = All Errors: ').then(r=>{return parseInt(r)})
+    }
 
     if(getErrors){
         fs.writeFileSync('./errors.csv', 'SKU,Name,ID,Error,Date\r\n')
@@ -46,6 +52,9 @@ global.enviroment = 'api.stok.ly';
                     errWrite.write(`"${listing.listingId}",`)
                     errWrite.write(`"${err.message}",`)
                     errWrite.write(`"${err.date}",\r\n`)
+                }
+                if (type == 0 && stopWhenSynced){
+                    return false
                 }
             })
         }
