@@ -53,7 +53,7 @@ global.enviroment = 'api.stok.ly';
                     errWrite.write(`"${err.message}",`)
                     errWrite.write(`"${err.date}",\r\n`)
                 }
-                if (type == 0 && stopWhenSynced){
+                if (err.type == 0 && stopWhenSynced){
                     return false
                 }
             })
