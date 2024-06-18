@@ -65,16 +65,16 @@ async function updateTerms(stoklyAttribute, attributeDetails){
 
 // Helper function to create an attribute in the remote system
 async function createAttribute(stoklyName, overRides) {
-    attDict[stoklyName] = {
+    attDict[stoklyName.toLowerCase()] = {
         name: stoklyName,
         type: overRides?.type || 0,
         defaultValue: overRides?.defaultValue || "",
         allowedValues: overRides?.allowedValues,
         allowedValueLabels: overRides?.allowedValueLabels
     }
-    if([4,6].includes(attDict[stoklyName].type)){sortTerms(attDict[stoklyName])}
-    const response = await common.requester('post', `https://${global.enviroment}/v0/item-attributes`, attDict[stoklyName]);
-    attDict[stoklyName].ID = response.data.data.id,
+    if([4,6].includes(attDict[stoklyName.toLowerCase()].type)){sortTerms(attDict[stoklyName.toLowerCase()])}
+    const response = await common.requester('post', `https://${global.enviroment}/v0/item-attributes`, attDict[stoklyName.toLowerCase()]);
+    attDict[stoklyName.toLowerCase()].ID = response.data.data.id,
     console.log(`Created ${stoklyName}`)
     return response.data.data.id;
 }
