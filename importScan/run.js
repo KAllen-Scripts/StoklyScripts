@@ -26,6 +26,7 @@ async function getInput(skuDict){
 (async()=>{
 
     let scanId = await common.askQuestion('Enter the Scan ID: ')
+    let select = await common.askQuestion('Are we selecting items that we import? 1 = Yes, 0 = No: ').then(r=>{return parseInt(r)})
 
     let skuDict = {}
 
@@ -46,6 +47,7 @@ async function getInput(skuDict){
         if(linkDict[listing.remoteId] == undefined){return}
         payload.listings.push({
             "scannedListingId": listing.scannedListingId,
+            "selected": select ? true : undefined,
             "importOptions": {
                 "action": "link_item",
                 "linkedItem": {
