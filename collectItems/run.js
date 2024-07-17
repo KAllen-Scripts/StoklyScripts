@@ -77,10 +77,16 @@ async function getInput(){
                     quantity: i.quantity
                 })
             }
-            await common.requester('post',`https://${global.enviroment}/v2/saleorders/${toCollect[item].saleOrderId}/collect-items`, postObj)
-            if((resetInv) && (adjustObj.items.length > 0)){await common.requester('post', `https://${global.enviroment}/v1/adjustments`, adjustObj)}
-            await common.sleep(3000)
-            console.log(`Done ${parseInt(item) + 1} of ${toCollect.length} | ${toCollect[item].niceId}`)
+            try{
+                await common.requester('post',`https://${global.enviroment}/v2/saleorders/${toCollect[item].saleOrderId}/collect-items`, postObj, 0)
+                if((resetInv) && (adjustObj.items.length > 0)){await common.requester('post', `https://${global.enviroment}/v1/adjustments`, adjustObj, 0)}
+                await common.sleep(3000)
+                console.log(`Done ${parseInt(item) + 1} of ${toCollect.length} | ${toCollect[item].niceId}`)
+            } catch {
+                console.log(`Failed ${parseInt(item) + 1} of ${toCollect.length} | ${toCollect[item].niceId}`)
+            }
+
+
         })
         .catch(err=>{console.log(err)})
     }
