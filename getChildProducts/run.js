@@ -12,6 +12,8 @@ global.enviroment = 'api.stok.ly';
 
     let objArr = []
 
+    childlessList = []
+
     await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, 'size=1000', `([status]!={1})%26%26${type > 2 ? '(([format]!={0}))' : '(([format]=={' + type + '}))'}`, async (item)=>{
         if(item.format == type || type > 2){
     
@@ -28,7 +30,7 @@ global.enviroment = 'api.stok.ly';
 
 
             if (children.length == 0){
-                objArr.push({
+                childlessList.push({
                     'Parent SKU': item.sku,
                     'Parent Name': item.name,
                     'Variable Attributes': variableAttributes,
@@ -50,7 +52,7 @@ global.enviroment = 'api.stok.ly';
         }
         objArr.push({})
     })
-    let i = await convertCSV.json2csv(objArr, {emptyFieldValue: ''})
+    let i = await convertCSV.json2csv([...objArr, ...childlessList], {emptyFieldValue: ''})
     fs.writeFileSync(`./${fileName}.csv`, i)
 
     global.continueReplen = false
