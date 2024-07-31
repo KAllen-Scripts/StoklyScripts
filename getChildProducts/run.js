@@ -12,7 +12,7 @@ global.enviroment = 'api.stok.ly';
 
     let objArr = []
 
-    childlessList = []
+    let childlessList = []
 
     await common.loopThrough('Getting Items', `https://${global.enviroment}/v0/items`, 'size=1000', `([status]!={1})%26%26${type > 2 ? '(([format]!={0}))' : '(([format]=={' + type + '}))'}`, async (item)=>{
         if(item.format == type || type > 2){
