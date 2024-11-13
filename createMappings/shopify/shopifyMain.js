@@ -209,7 +209,7 @@ async function getTagsAndTypes(scanID){
     }
     await common.loopThrough('gGetting Listing Data', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (listing)=>{
         if(!returnObj.types.includes(listing.unmappedData.product_type)){returnObj.types.push(listing.unmappedData.product_type)}
-        for(const tag of listing.unmappedData.tags){
+        for(const tag of (Array.isArray(listing?.unmappedData?.tags) ? listing?.unmappedData?.tags : [])){
             if(!returnObj.tags.includes(tag)){returnObj.tags.push(tag)}
         }
     })
