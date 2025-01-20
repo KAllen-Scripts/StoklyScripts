@@ -3,10 +3,11 @@ const wooComMain = require('./wooCom/wooComMain.js');
 const amazonMain = require('./amazon/amazonMain.js');
 const shopifyMain = require('./shopify/shopifyMain.js');
 const magentoMain = require('./magento/magentoMain.js');
+const shoplineMain = require('./shopline/shoplineMain.js')
 const common = require('../common.js');
 const {getAtts} = require('./localCommon.js');
 
-global.enviroment = 'api.stok.ly';
+global.enviroment = 'api.dev.stok.ly';
 
 (async ()=>{
 
@@ -65,6 +66,9 @@ global.enviroment = 'api.stok.ly';
                     break;
                 case 6:
                     await shopifyMain.run(channel, scanIDs[0].storeScanId)
+                    break;
+                case 7:
+                    await shoplineMain.run(channel, scanIDs[0].storeScanId)
                     break;
             }
         }
