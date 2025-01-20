@@ -75,60 +75,12 @@ const run = async (channel, scanID)=>{
                         "priority": 6
                     },
                     {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Option 1'),
-                        "remoteAttributeId": "option1",
-                        "remoteMappableIds": [
-                            "global"
-                        ],
-                        "priority": 7
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Option 2'),
-                        "remoteAttributeId": "option2",
-                        "remoteMappableIds": [
-                            "global"
-                        ],
-                        "priority": 8
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Option 3'),
-                        "remoteAttributeId": "option3",
-                        "remoteMappableIds": [
-                            "global"
-                        ],
-                        "priority": 9
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Option 1 Title'),
-                        "remoteAttributeId": "option1Title",
-                        "remoteMappableIds": [
-                            "global"
-                        ],
-                        "priority": 10
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Option 2 Title'),
-                        "remoteAttributeId": "option2Title",
-                        "remoteMappableIds": [
-                            "global"
-                        ],
-                        "priority": 11
-                    },
-                    {
-                        "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Option 3 Title'),
-                        "remoteAttributeId": "option3Title",
-                        "remoteMappableIds": [
-                            "global"
-                        ],
-                        "priority": 12
-                    },
-                    {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Collection'),
                         "remoteAttributeId": "collection",
                         "remoteMappableIds": [
                             "global"
                         ],
-                        "priority": 13
+                        "priority": 10
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Product Type',{
@@ -139,7 +91,7 @@ const run = async (channel, scanID)=>{
                         "remoteMappableIds": [
                             "global"
                         ],
-                        "priority": 14
+                        "priority": 11
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Status',{
@@ -154,7 +106,7 @@ const run = async (channel, scanID)=>{
                         "remoteMappableIds": [
                             "global"
                         ],
-                        "priority": 15
+                        "priority": 12
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Tags', {
@@ -165,7 +117,7 @@ const run = async (channel, scanID)=>{
                         "remoteMappableIds": [
                             "global"
                         ],
-                        "priority": 16
+                        "priority": 13
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Taxable'),
@@ -173,7 +125,7 @@ const run = async (channel, scanID)=>{
                         "remoteMappableIds": [
                             "global"
                         ],
-                        "priority": 17
+                        "priority": 14
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Tax Percentage'),
@@ -181,7 +133,7 @@ const run = async (channel, scanID)=>{
                         "remoteMappableIds": [
                             "global"
                         ],
-                        "priority": 18
+                        "priority": 15
                     },
                     {
                         "localAttributeId": await localCommon.checkSingleAttribute(channel.name + ' - Vendor'),
@@ -189,12 +141,50 @@ const run = async (channel, scanID)=>{
                         "remoteMappableIds": [
                             "global"
                         ],
-                        "priority": 19
+                        "priority": 16
+                    },
+                    {
+                        "localAttributeId": "countryOfOrigin",
+                        "remoteAttributeId": "countryCodeOfOrigin",
+                        "remoteMappableIds": [
+                            "global"
+                        ],
+                        "priority": 17
+                    },
+                    {
+                        "localAttributeId": "harmonyCode",
+                        "remoteAttributeId": "harmonizedSystemCode",
+                        "remoteMappableIds": [
+                            "global"
+                        ],
+                        "priority": 18
                     }
                 ],
                 "index": 0
             }
         ]
+    }
+
+    for (const option in tagsAndTypes.options){
+        postObj.attributeGroups[0].attributes.push({
+            "localAttributeId": await localCommon.checkSingleAttribute(`${channel.name} - Option ${option} Title`),
+            "remoteAttributeId": `option${option}Title`,
+            "remoteMappableIds": [
+                "global"
+            ],
+            "priority": postObj.attributeGroups[0].attributes.length
+        })
+        postObj.attributeGroups[0].attributes.push({
+            "localAttributeId": await localCommon.checkSingleAttribute(`${channel.name} - Option ${option}`, {
+                "type": 4,
+                "allowedValues": tagsAndTypes.options[option]
+            }),
+            "remoteAttributeId": `option${option}`,
+            "remoteMappableIds": [
+                "global"
+            ],
+            "priority": postObj.attributeGroups[0].attributes.length
+        })
     }
 
     let currentMapping = await common.requester('get', `https://${global.enviroment}/v0/channels/${channel.channelId}/mappings`).then(r=>{return r.data.data})
@@ -205,16 +195,28 @@ const run = async (channel, scanID)=>{
 async function getTagsAndTypes(scanID){
     let returnObj = {
         tags:[],
-        types:[]
+        types:[],
+        options:{}
     }
-    await common.loopThrough('gGetting Listing Data', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (listing)=>{
-        if(!returnObj.types.includes(listing.unmappedData.product_type)){returnObj.types.push(listing.unmappedData.product_type)}
+    await common.loopThrough('gGetting Listing Data', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', async (listing)=>{
+        if(listing.unmappedData.productType !== null){
+            if(!returnObj.types.includes(listing.unmappedData.productType) && listing.unmappedData.productType.trim() != ''){returnObj.types.push(listing.unmappedData.productType)}
+        }
         for(const tag of (Array.isArray(listing?.unmappedData?.tags) ? listing?.unmappedData?.tags : [])){
             if(!returnObj.tags.includes(tag)){returnObj.tags.push(tag)}
         }
+        for (const option of listing.unmappedData.options){
+            if(returnObj.options[option.position] == undefined){returnObj.options[option.position] = []}
+        }
+        if(listing.type == 'variable'){
+            await common.loopThrough('', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=1000&includeUnmappedData=1', `[parentId]=={${listing.scannedListingId}}`, (childListing)=>{
+                for (const option in childListing.unmappedData.selectedOptions){
+                    console.log(parseInt(option)+1)
+                    returnObj.options[parseInt(option)+1].push(childListing.unmappedData.selectedOptions[option].value)
+                }
+            })
+        }
     })
-    returnObj.tags.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
-    returnObj.types.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
     return returnObj
 }
 
