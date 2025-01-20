@@ -7,7 +7,7 @@ const shoplineMain = require('./shopline/shoplineMain.js')
 const common = require('../common.js');
 const {getAtts} = require('./localCommon.js');
 
-global.enviroment = 'api.dev.stok.ly';
+global.enviroment = 'api.stok.ly';
 
 (async ()=>{
 
