@@ -43,6 +43,7 @@ async function getAttIDs(attList) {
 async function updateTerms(stoklyAttribute, attributeDetails){
     if(!Array.isArray(attributeDetails.allowedValues)){return}
     let optionsAdded = false
+    if (!stoklyAttribute?.allowedValueLabels){stoklyAttribute.allowedValueLabels = []}
     for (const option in stoklyAttribute.allowedValues){
         if (stoklyAttribute.allowedValueLabels[option] == undefined){
             stoklyAttribute.allowedValueLabels[option] = ''
@@ -72,6 +73,7 @@ async function createAttribute(stoklyName, overRides) {
         allowedValues: overRides?.allowedValues,
         allowedValueLabels: overRides?.allowedValueLabels
     }
+    console.log(stoklyName, overRides)
     if([4,6].includes(attDict[stoklyName.toLowerCase()].type)){sortTerms(attDict[stoklyName.toLowerCase()])}
     const response = await common.requester('post', `https://${global.enviroment}/v0/item-attributes`, attDict[stoklyName.toLowerCase()]);
     attDict[stoklyName.toLowerCase()].ID = response.data.data.id,
