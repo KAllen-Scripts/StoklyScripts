@@ -27,6 +27,7 @@ async function getInput(){
 (async ()=>{
 
     const locationID = await common.askQuestion(`What is the ID of the location we are collecting from?: `)
+    const channelName = await common.askQuestion(`What is the name of the channel we are collecting for?: `)
     const clearBefore = await common.askQuestion(`What order are we clearing up to?: `)
     const resetInv = await common.askQuestion(`Are we undoing any adjustments this will cause? 1 = Yes, 0 = No: `).then(r=>{return parseInt(r)})
 
@@ -43,7 +44,7 @@ async function getInput(){
     const defaultBin = await common.requester('get', `https://${global.enviroment}/v0/locations/${locationID}/bins?filter=[default]=={1}`).then(r=>{return r.data.data[0].binId})
 
     await common.loopThrough('Checking Orders', `https://${global.enviroment}/v2/saleorders`, `sortDirection=DESC&sortField=createdAt&size=1000`, `(([stage]=={order}%26%26[itemStatuses]::{unprocessed}))%26%26([stage]!={removed})`, async (item)=>{
-        if ((item.niceId == 11085) || (item.niceId == 11722)){return}
+        if(item.channelName.toLowerCase() != channelName.toLowerCase()){return}
         if(optOutArr.includes(item.niceId)){return}
         if(optInArr.includes(item.niceId) || parseInt(item.niceId) <= clearBefore){toCollect.push(item)}
     })
@@ -82,7 +83,7 @@ async function getInput(){
                 await common.requester('patch', `https://api.stok.ly/v2/saleorders/${toCollect[item].saleOrderId}`, {tags:["ignoreInReports"]})
                 await common.requester('post',`https://${global.enviroment}/v2/saleorders/${toCollect[item].saleOrderId}/collect-items`, postObj, 0)
                 if((resetInv) && (adjustObj.items.length > 0)){await common.requester('post', `https://${global.enviroment}/v1/adjustments`, adjustObj, 0)}
-                // await common.sleep(3000)
+                await common.sleep(1200)
                 console.log(`Done ${parseInt(item) + 1} of ${toCollect.length} | ${toCollect[item].niceId}`)
             } catch {
                 console.log(`Failed ${parseInt(item) + 1} of ${toCollect.length} | ${toCollect[item].niceId}`)
