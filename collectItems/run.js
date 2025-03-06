@@ -44,7 +44,7 @@ async function getInput(){
     const defaultBin = await common.requester('get', `https://${global.enviroment}/v0/locations/${locationID}/bins?filter=[default]=={1}`).then(r=>{return r.data.data[0].binId})
 
     await common.loopThrough('Checking Orders', `https://${global.enviroment}/v2/saleorders`, `sortDirection=DESC&sortField=createdAt&size=1000`, `(([stage]=={order}%26%26[itemStatuses]::{unprocessed}))%26%26([stage]!={removed})`, async (item)=>{
-        if(item.channelName.toLowerCase() != channelName.toLowerCase()){return}
+        if(item.channelName?.toLowerCase() != channelName.toLowerCase()){return}
         if(optOutArr.includes(item.niceId)){return}
         if(optInArr.includes(item.niceId) || parseInt(item.niceId) <= clearBefore){toCollect.push(item)}
     })
