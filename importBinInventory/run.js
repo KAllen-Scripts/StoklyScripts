@@ -38,6 +38,9 @@ async function adjustStock(bin, locationId, overRide){
             }
         })
     }
+    for (const item of Object.keys(bin.items)){
+        if (item.quantity == 0){delete bin.items[item]}
+    }
     if (Object.keys(bin.items).length != 0){
         let stockUpdate = {
             "locationId": locationId,
