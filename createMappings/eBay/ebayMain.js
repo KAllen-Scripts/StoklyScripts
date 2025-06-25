@@ -99,28 +99,30 @@ const getData = async (scanID)=>{
             }
 
             await common.loopThrough('Got unmapped Data for', `https://${global.enviroment}/v1/store-scans/${scanID}/listings`, 'size=50&sortDirection=ASC&sortField=name&includeUnmappedData=1', '[parentId]=={@null;}', (item)=>{
-                if(!(outArray.catIDs.includes(item.unmappedData.PrimaryCategory.CategoryID))){
-                    outArray.categories.push({
-                        name:item.unmappedData.PrimaryCategory.CategoryName.split(':')[item.unmappedData.PrimaryCategory.CategoryName.split(':').length-1],
-                        ID: item.unmappedData.PrimaryCategory.CategoryID
-                    })
-                    outArray.catIDs.push(item.unmappedData.PrimaryCategory.CategoryID)
-                }
+                if (item.status != 'fatal_error') {
+                    if(!(outArray.catIDs.includes(item.unmappedData.PrimaryCategory.CategoryID))){
+                        outArray.categories.push({
+                            name:item.unmappedData.PrimaryCategory.CategoryName.split(':')[item.unmappedData.PrimaryCategory.CategoryName.split(':').length-1],
+                            ID: item.unmappedData.PrimaryCategory.CategoryID
+                        })
+                        outArray.catIDs.push(item.unmappedData.PrimaryCategory.CategoryID)
+                    }
 
-                if (item.unmappedData.ItemSpecifics != undefined){
-                    for (const attribute of item.unmappedData.ItemSpecifics){
-                        if (!(outArray.attTrack.includes(attribute.Name)) && attribute.Name != 'DescriptionTemplate'){
-                            outArray.attributes.push({stoklyName:attribute.Name, remoteName:attribute.Name})
-                            outArray.attTrack.push(attribute.Name)
+                    if (item.unmappedData.ItemSpecifics != undefined){
+                        for (const attribute of item.unmappedData.ItemSpecifics){
+                            if (!(outArray.attTrack.includes(attribute.Name)) && attribute.Name != 'DescriptionTemplate'){
+                                outArray.attributes.push({stoklyName:attribute.Name, remoteName:attribute.Name})
+                                outArray.attTrack.push(attribute.Name)
+                            }
                         }
                     }
-                }
 
-                if (item.unmappedData.Variations != undefined){
-                    for (const attribute of item.unmappedData.Variations.VariationSpecificsSet){
-                        if (!(outArray.attTrack.includes(attribute.Name)) && attribute.Name != 'DescriptionTemplate'){
-                            outArray.attributes.push({stoklyName:attribute.Name, remoteName:attribute.Name})
-                            outArray.attTrack.push(attribute.Name)
+                    if (item.unmappedData.Variations != undefined){
+                        for (const attribute of item.unmappedData.Variations.VariationSpecificsSet){
+                            if (!(outArray.attTrack.includes(attribute.Name)) && attribute.Name != 'DescriptionTemplate'){
+                                outArray.attributes.push({stoklyName:attribute.Name, remoteName:attribute.Name})
+                                outArray.attTrack.push(attribute.Name)
+                            }
                         }
                     }
                 }
