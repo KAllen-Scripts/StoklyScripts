@@ -24,14 +24,16 @@ let run = async (channel, scanID)=> {
     let attDict = await getAttDict(channel.data.uri)
     let scanData = await getData(scanID)
 
-    let mappableList = (()=>{
+    let mappableList = await (async ()=>{
         let mappablesArray = []
-        for (const mappable of scanData.attSets){
-            mappablesArray.push({
-                "mappableId": mappable,
-                "mappableName": attSets[mappable]
-            })
-        }
+        await common.requester('get', ` https://api.stok.ly/v0/channels/${channel.channelId}/remote-mappables`).then(r=>{
+            for (const mappable of r.data.data){
+                mappablesArray.push({
+                    "mappableId": mappable.id,
+                    "mappableName": mappable.name
+                })
+            }
+        })
         return mappablesArray
     })()
 
