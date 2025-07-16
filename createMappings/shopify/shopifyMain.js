@@ -179,10 +179,7 @@ const run = async (channel, scanID)=>{
             "priority": postObj.attributeGroups[0].attributes.length
         })
         postObj.attributeGroups[0].attributes.push({
-            "localAttributeId": await localCommon.checkSingleAttribute(`${channel.name} - Option ${parseInt(option)}`, {
-                "type": 6,
-                "allowedValues": tagsAndTypes.optionNumbers[option]
-            }),
+            "localAttributeId": await localCommon.checkSingleAttribute(`${channel.name} - Option ${parseInt(option)}`),
             "remoteAttributeId": `option${option}`,
             "remoteMappableIds": [
                 "global"
